@@ -1,0 +1,29 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../lib/site';
+
+const posts = await getCollection('posts', ({ data }) => !data.draft);
+const categoryCounts = posts.reduce<Record<string, number>>((acc, post) => {
+  acc[post.data.category] = (acc[post.data.category] ?? 0) + 1;
+  return acc;
+}, {});
+const categories = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+---
+
+<BaseLayout title="Categories">
+  <section class="page-title">
+    <p class="eyebrow">Collections</p>
+    <h1>Categories</h1>
+    <p>Browse posts by their main collection.</p>
+  </section>
+
+  <div class="category-grid">
+    {categories.map(([category, count]) => (
+      <a class="category-card" href={withBase(`/categories/${encodeURIComponent(category)}/`)}>
+        <strong>{category}</strong>
+        <span>{count} posts</span>
+      </a>
+    ))}
+  </div>
+</BaseLayout>

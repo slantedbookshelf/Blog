@@ -1,0 +1,40 @@
+---
+import { formatDate, getPostSlug, withBase } from '../lib/site';
+
+interface Props {
+  post: {
+    id: string;
+    data: {
+      title: string;
+      description: string;
+      pubDate: Date;
+      category: string;
+      tags: string[];
+    };
+  };
+}
+
+const { post } = Astro.props;
+const slug = getPostSlug(post.id);
+---
+
+<article class="post-card">
+  <div class="post-card__meta">
+    <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+    <a href={withBase(`/categories/${encodeURIComponent(post.data.category)}/`)}>
+      {post.data.category}
+    </a>
+  </div>
+
+  <h2>
+    <a href={withBase(`/posts/${slug}/`)}>{post.data.title}</a>
+  </h2>
+
+  <p>{post.data.description}</p>
+
+  <div class="tag-row" aria-label="Post tags">
+    {post.data.tags.map((tag) => (
+      <a class="tag" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>
+    ))}
+  </div>
+</article>

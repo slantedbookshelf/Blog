@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../lib/site';
+
+const posts = await getCollection('posts', ({ data }) => !data.draft);
+const tagCounts = posts.reduce<Record<string, number>>((acc, post) => {
+  post.data.tags.forEach((tag) => {
+    acc[tag] = (acc[tag] ?? 0) + 1;
+  });
+  return acc;
+}, {});
+const tags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+---
+
+<BaseLayout title="Tags">
+  <section class="page-title">
+    <p class="eyebrow">Topics</p>
+    <h1>Tags</h1>
+    <p>Browse posts by smaller, cross-cutting topics.</p>
+  </section>
+
+  <div class="tag-cloud">
+    {tags.map(([tag, count]) => (
+      <a class="tag tag--large" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>
+        #{tag}
+        <span>{count}</span>
+      </a>
+    ))}
+  </div>
+</BaseLayout>

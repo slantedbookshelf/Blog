@@ -1,0 +1,36 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import { SITE, withBase } from '../lib/site';
+
+const navItems = [
+  { href: '/', label: 'Home' },
+  { href: '/blog/', label: 'Blog' },
+  { href: '/tags/', label: 'Tags' },
+  { href: '/categories/', label: 'Categories' },
+  { href: '/about/', label: 'About' }
+];
+---
+
+<header class="site-header">
+  <nav class="nav-shell" aria-label="Primary navigation">
+    <a class="brand" href={withBase('/')}>
+      <span class="brand-mark" aria-hidden="true">M</span>
+      <span>{SITE.title}</span>
+    </a>
+
+    <input class="nav-toggle" id="nav-toggle" type="checkbox" aria-label="Open navigation" />
+    <label class="nav-toggle-label" for="nav-toggle" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+
+    <div class="nav-links">
+      {navItems.map((item) => (
+        <a href={withBase(item.href)}>{item.label}</a>
+      ))}
+      <a href={SITE.github} target="_blank" rel="noreferrer">GitHub</a>
+      <ThemeToggle />
+    </div>
+  </nav>
+</header>

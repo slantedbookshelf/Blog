@@ -1,0 +1,62 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import { SITE, withBase } from '../lib/site';
+
+const posts = (await getCollection('posts', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+const recentPosts = posts.slice(0, 3);
+const tags = [...new Set(posts.flatMap((post) => post.data.tags))].slice(0, 8);
+---
+
+<BaseLayout title="Home" wide>
+  <section class="hero">
+    <div class="hero__copy">
+      <p class="eyebrow">{SITE.location}</p>
+      <h1>Hi, I am {SITE.author}.</h1>
+      <p class="hero__lead">{SITE.description}</p>
+      <div class="hero__actions">
+        <a class="button button--primary" href={withBase('/blog/')}>Read posts</a>
+        <a class="button" href={SITE.github} target="_blank" rel="noreferrer">GitHub</a>
+        <a class="button" href={SITE.email}>Email</a>
+      </div>
+    </div>
+
+    <aside class="profile-panel" aria-label="Profile summary">
+      <div class="avatar" aria-hidden="true">{SITE.author.slice(0, 1)}</div>
+      <dl>
+        <div>
+          <dt>Focus</dt>
+          <dd>Web, notes, systems</dd>
+        </div>
+        <div>
+          <dt>Writing</dt>
+          <dd>{posts.length} posts</dd>
+        </div>
+        <div>
+          <dt>Tags</dt>
+          <dd>{tags.length} topics</dd>
+        </div>
+      </dl>
+    </aside>
+  </section>
+
+  <section class="section-heading">
+    <div>
+      <p class="eyebrow">Latest writing</p>
+      <h2>Recent posts</h2>
+    </div>
+    <a href={withBase('/blog/')}>View all</a>
+  </section>
+
+  <div class="post-grid">
+    {recentPosts.map((post) => <PostCard post={post} />)}
+  </div>
+
+  <section class="topic-strip" aria-label="Popular tags">
+    {tags.map((tag) => (
+      <a class="tag" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>
+    ))}
+  </section>
+</BaseLayout>

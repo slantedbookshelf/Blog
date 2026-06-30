@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../lib/site';
+---
+
+<BaseLayout title="About">
+  <section class="page-title">
+    <p class="eyebrow">About</p>
+    <h1>{SITE.author}</h1>
+    <p>{SITE.description}</p>
+  </section>
+
+  <section class="about-grid">
+    <div>
+      <h2>Now</h2>
+      <p>
+        I use this blog to collect durable notes, technical explorations, and small lessons
+        learned while building things.
+      </p>
+    </div>
+    <div>
+      <h2>Links</h2>
+      <ul class="link-list">
+        <li><a href={SITE.github} target="_blank" rel="noreferrer">GitHub</a></li>
+        <li><a href={SITE.email}>Email</a></li>
+      </ul>
+    </div>
+  </section>
+</BaseLayout>

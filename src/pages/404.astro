@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/site';
+---
+
+<BaseLayout title="Not found">
+  <section class="empty-state">
+    <p class="eyebrow">404</p>
+    <h1>Page not found</h1>
+    <p>The page may have moved, or the link may be outdated.</p>
+    <a class="button button--primary" href={withBase('/')}>Back home</a>
+  </section>
+</BaseLayout>
