@@ -3,22 +3,22 @@ import ThemeToggle from './ThemeToggle.astro';
 import { SITE, withBase } from '../lib/site';
 
 const navItems = [
-  { href: '/', label: 'Home' },
-  { href: '/blog/', label: 'Blog' },
-  { href: '/tags/', label: 'Tags' },
-  { href: '/categories/', label: 'Categories' },
-  { href: '/about/', label: 'About' }
+  { href: '/', label: '首页' },
+  { href: '/blog/', label: '文章' },
+  { href: '/tags/', label: '标签' },
+  { href: '/categories/', label: '分类' },
+  { href: '/about/', label: '关于' }
 ];
 ---
 
 <header class="site-header">
-  <nav class="nav-shell" aria-label="Primary navigation">
+  <nav class="nav-shell" aria-label="主导航">
     <a class="brand" href={withBase('/')}>
-      <span class="brand-mark" aria-hidden="true">M</span>
+      <span class="brand-mark" aria-hidden="true">谢</span>
       <span>{SITE.title}</span>
     </a>
 
-    <input class="nav-toggle" id="nav-toggle" type="checkbox" aria-label="Open navigation" />
+    <input class="nav-toggle" id="nav-toggle" type="checkbox" aria-label="打开导航" />
     <label class="nav-toggle-label" for="nav-toggle" aria-hidden="true">
       <span></span>
       <span></span>

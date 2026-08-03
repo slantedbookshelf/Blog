@@ -14,11 +14,11 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft && data.ta
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 ---
 
-<BaseLayout title={`Tag: ${tag}`}>
+<BaseLayout title={`标签：${tag}`}>
   <section class="page-title">
-    <p class="eyebrow">Tag</p>
+    <p class="eyebrow">标签</p>
     <h1>#{tag}</h1>
-    <p>{posts.length} posts in this tag.</p>
+    <p>这个标签下共有 {posts.length} 篇文章。</p>
   </section>
 
   <div class="post-list">

@@ -3,23 +3,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE } from '../lib/site';
 ---
 
-<BaseLayout title="About">
+<BaseLayout title="关于">
   <section class="page-title">
-    <p class="eyebrow">About</p>
+    <p class="eyebrow">关于</p>
     <h1>{SITE.author}</h1>
     <p>{SITE.description}</p>
   </section>
 
   <section class="about-grid">
     <div>
-      <h2>Now</h2>
+      <h2>现在</h2>
       <p>
-        I use this blog to collect durable notes, technical explorations, and small lessons
-        learned while building things.
+        我目前在{SITE.university}学习，用这个博客整理长期有用的笔记、技术探索和项目复盘。
       </p>
     </div>
     <div>
-      <h2>Links</h2>
+      <h2>链接</h2>
       <ul class="link-list">
         <li><a href={SITE.github} target="_blank" rel="noreferrer">GitHub</a></li>
         <li><a href={SITE.email}>Email</a></li>

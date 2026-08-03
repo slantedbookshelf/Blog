@@ -1,9 +1,10 @@
 ---
-import { formatDate, getPostSlug, withBase } from '../lib/site';
+import { estimateReadingTime, formatDate, getPostSlug, withBase } from '../lib/site';
 
 interface Props {
   post: {
     id: string;
+    body?: string;
     data: {
       title: string;
       description: string;
@@ -16,25 +17,24 @@ interface Props {
 
 const { post } = Astro.props;
 const slug = getPostSlug(post.id);
+const minutes = estimateReadingTime(post.body ?? post.data.description);
 ---
 
 <article class="post-card">
-  <div class="post-card__meta">
-    <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
-    <a href={withBase(`/categories/${encodeURIComponent(post.data.category)}/`)}>
-      {post.data.category}
-    </a>
-  </div>
-
-  <h2>
-    <a href={withBase(`/posts/${slug}/`)}>{post.data.title}</a>
-  </h2>
-
-  <p>{post.data.description}</p>
-
-  <div class="tag-row" aria-label="Post tags">
-    {post.data.tags.map((tag) => (
-      <a class="tag" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>
-    ))}
+  <div class="post-card__body">
+    <h2>
+      <a href={withBase(`/posts/${slug}/`)}>{post.data.title}</a>
+    </h2>
+    <p>{post.data.description}</p>
+    <div class="post-card__meta" aria-label="文章元数据">
+      <time class="post-card__date" datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+      <a href={withBase(`/categories/${encodeURIComponent(post.data.category)}/`)}>
+        {post.data.category}
+      </a>
+      <span>{minutes} 分钟</span>
+      {post.data.tags.slice(0, 4).map((tag) => (
+        <a href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>
+      ))}
+    </div>
   </div>
 </article>

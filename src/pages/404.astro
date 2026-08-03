@@ -3,11 +3,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { withBase } from '../lib/site';
 ---
 
-<BaseLayout title="Not found">
+<BaseLayout title="页面未找到">
   <section class="empty-state">
     <p class="eyebrow">404</p>
-    <h1>Page not found</h1>
-    <p>The page may have moved, or the link may be outdated.</p>
-    <a class="button button--primary" href={withBase('/')}>Back home</a>
+    <h1>页面未找到</h1>
+    <p>这个页面可能已经移动，或链接已经失效。</p>
+    <a class="button button--primary" href={withBase('/')}>返回首页</a>
   </section>
 </BaseLayout>

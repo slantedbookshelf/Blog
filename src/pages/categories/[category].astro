@@ -14,11 +14,11 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft && data.ca
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 ---
 
-<BaseLayout title={`Category: ${category}`}>
+<BaseLayout title={`分类：${category}`}>
   <section class="page-title">
-    <p class="eyebrow">Category</p>
+    <p class="eyebrow">分类</p>
     <h1>{category}</h1>
-    <p>{posts.length} posts in this category.</p>
+    <p>这个分类下共有 {posts.length} 篇文章。</p>
   </section>
 
   <div class="post-list">

@@ -30,6 +30,7 @@ const pageTitle = title ? `${title} | ${SITE.title}` : SITE.title;
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
     <link rel="icon" href={withBase('/favicon.svg')} />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.title} RSS`} href={withBase('/rss.xml')} />
     <link rel="canonical" href={Astro.url.href} />
   </head>
   <body>
@@ -38,7 +39,7 @@ const pageTitle = title ? `${title} | ${SITE.title}` : SITE.title;
       <slot />
     </main>
     <footer class="site-footer">
-      <p>© {new Date().getFullYear()} {SITE.author}. Built with Astro.</p>
+      <p>&copy; {new Date().getFullYear()} {SITE.author}. 由 Astro 构建。</p>
     </footer>
   </body>
 </html>

@@ -44,16 +44,16 @@ const next = posts[index - 1];
     </div>
   </article>
 
-  <nav class="post-nav" aria-label="Post navigation">
+  <nav class="post-nav" aria-label="文章导航">
     {previous ? (
       <a href={withBase(`/posts/${getPostSlug(previous.id)}/`)}>
-        <span>Previous</span>
+        <span>上一篇</span>
         {previous.data.title}
       </a>
     ) : <span></span>}
     {next ? (
       <a href={withBase(`/posts/${getPostSlug(next.id)}/`)}>
-        <span>Next</span>
+        <span>下一篇</span>
         {next.data.title}
       </a>
     ) : <span></span>}

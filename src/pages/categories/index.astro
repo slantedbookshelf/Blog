@@ -11,18 +11,18 @@ const categoryCounts = posts.reduce<Record<string, number>>((acc, post) => {
 const categories = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 ---
 
-<BaseLayout title="Categories">
+<BaseLayout title="分类">
   <section class="page-title">
-    <p class="eyebrow">Collections</p>
-    <h1>Categories</h1>
-    <p>Browse posts by their main collection.</p>
+    <p class="eyebrow">内容集合</p>
+    <h1>分类</h1>
+    <p>按文章的主要方向浏览内容。</p>
   </section>
 
   <div class="category-grid">
     {categories.map(([category, count]) => (
       <a class="category-card" href={withBase(`/categories/${encodeURIComponent(category)}/`)}>
         <strong>{category}</strong>
-        <span>{count} posts</span>
+        <span>{count} 篇文章</span>
       </a>
     ))}
   </div>

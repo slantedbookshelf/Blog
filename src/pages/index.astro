@@ -2,61 +2,212 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
-import { SITE, withBase } from '../lib/site';
+import { SITE, daysSince, estimateReadingTime, formatDate, getPostSlug, withBase } from '../lib/site';
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
-const recentPosts = posts.slice(0, 3);
-const tags = [...new Set(posts.flatMap((post) => post.data.tags))].slice(0, 8);
+const latestPost = posts[0];
+const lastUpdated = posts[0]?.data.updatedDate ?? posts[0]?.data.pubDate;
+const tagCounts = posts.reduce<Record<string, number>>((acc, post) => {
+  post.data.tags.forEach((tag) => {
+    acc[tag] = (acc[tag] ?? 0) + 1;
+  });
+  return acc;
+}, {});
+const categoryCounts = posts.reduce<Record<string, number>>((acc, post) => {
+  acc[post.data.category] = (acc[post.data.category] ?? 0) + 1;
+  return acc;
+}, {});
+const tags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+const categories = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+const runningDays = daysSince(SITE.startDate);
+const vibeWorks = [
+  {
+    name: 'smart-cockpit-agent',
+    title: '多模态智能座舱 Agent',
+    // description: '基于 LangGraph 与 MCP 协议的下一代智能座舱 Agent 系统，探索车载场景里的多模态交互和工具编排。',
+    href: 'https://github.com/jiasuxie92-jpg/smart-cockpit-agent',
+    stack: ['Python', 'LangGraph', 'MCP']
+  },
+  // {
+  //   name: 'Easy_Campus',
+  //   title: '校园美食采购平台',
+  //   description: '面向校园场景的美食采购平台，覆盖商品、订单和采购流程，是一个更贴近业务系统的完整练习。',
+  //   href: 'https://github.com/jiasuxie92-jpg/Easy_Campus',
+  //   stack: ['Java', 'Campus', 'Platform']
+  // },
+  {
+    name: 'HBTI_0427',
+    title: 'HBTI 生日人格测试',
+    // description: '为朋友生日制作的非正式人格测试，把互动问答、结果生成和个人化表达做成一个轻量 Web 体验。',
+    href: 'https://github.com/jiasuxie92-jpg/HBTI_0427',
+    stack: ['TypeScript', 'Interactive', 'Gift']
+  },
+  // {
+  //   name: 'Zhixing_Assistant',
+  //   title: '知行助手',
+  //   description: '面向个人学习和工作效率的 AI assistant 原型，记录把 AI 能力落到日常任务流里的尝试。',
+  //   href: 'https://github.com/jiasuxie92-jpg/Zhixing_Assistant',
+  //   stack: ['AI Agent', 'Workflow', 'Assistant']
+  // }
+];
 ---
 
-<BaseLayout title="Home" wide>
-  <section class="hero">
-    <div class="hero__copy">
-      <p class="eyebrow">{SITE.location}</p>
-      <h1>Hi, I am {SITE.author}.</h1>
-      <p class="hero__lead">{SITE.description}</p>
-      <div class="hero__actions">
-        <a class="button button--primary" href={withBase('/blog/')}>Read posts</a>
-        <a class="button" href={SITE.github} target="_blank" rel="noreferrer">GitHub</a>
-        <a class="button" href={SITE.email}>Email</a>
-      </div>
-    </div>
-
-    <aside class="profile-panel" aria-label="Profile summary">
-      <div class="avatar" aria-hidden="true">{SITE.author.slice(0, 1)}</div>
-      <dl>
-        <div>
-          <dt>Focus</dt>
-          <dd>Web, notes, systems</dd>
-        </div>
-        <div>
-          <dt>Writing</dt>
-          <dd>{posts.length} posts</dd>
-        </div>
-        <div>
-          <dt>Tags</dt>
-          <dd>{tags.length} topics</dd>
-        </div>
-      </dl>
-    </aside>
-  </section>
-
-  <section class="section-heading">
+<BaseLayout title="首页" wide>
+  <section class="home-top">
     <div>
-      <p class="eyebrow">Latest writing</p>
-      <h2>Recent posts</h2>
+      <p class="section-label">welcome to</p>
+      <h1>{SITE.title}</h1>
+      <p>{SITE.description}</p>
     </div>
-    <a href={withBase('/blog/')}>View all</a>
+    <dl class="metric-grid" aria-label="站点数据">
+      <div>
+        <dt>博客数</dt>
+        <dd>{posts.length}</dd>
+      </div>
+      <div>
+        <dt>vibe coding作品</dt>
+        <dd>{vibeWorks.length}</dd>
+      </div>
+      <div>
+        <dt>陪你走过</dt>
+        <dd>{runningDays}d</dd>
+      </div>
+      <div>
+        <dt>最近更新</dt>
+        <dd>{lastUpdated ? formatDate(lastUpdated) : '暂无'}</dd>
+      </div>
+    </dl>
   </section>
 
-  <div class="post-grid">
-    {recentPosts.map((post) => <PostCard post={post} />)}
+  <div class="content-layout">
+    <main class="content-main">
+      {latestPost && (
+        <section class="panel latest-panel" aria-label="最近更新">
+          <div class="panel__header">
+            <h2>最近更新</h2>
+            <a href={withBase(`/posts/${getPostSlug(latestPost.id)}/`)}>打开</a>
+          </div>
+          <article class="latest-entry">
+            <div>
+              <h3>
+                <a href={withBase(`/posts/${getPostSlug(latestPost.id)}/`)}>{latestPost.data.title}</a>
+              </h3>
+              <p>{latestPost.data.description}</p>
+              <div class="post-card__meta">
+                <time class="post-card__date" datetime={latestPost.data.pubDate.toISOString()}>{formatDate(latestPost.data.pubDate)}</time>
+                <span>{latestPost.data.category}</span>
+                <span>{estimateReadingTime(latestPost.body ?? latestPost.data.description)} 分钟</span>
+                {latestPost.data.tags.slice(0, 4).map((tag) => (
+                  <a href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>
+                ))}
+              </div>
+            </div>
+          </article>
+        </section>
+      )}
+
+      <section class="panel works-panel" aria-label="vibe coding作品">
+        <div class="panel__header">
+          <h2>vibe coding作品</h2>
+          <a href={`${SITE.github}?tab=repositories`} target="_blank" rel="noreferrer">仓库</a>
+        </div>
+        <div class="works-list">
+          {vibeWorks.map((work) => (
+            <article class="work-item">
+              <div>
+                <p class="work-item__name">{work.name}</p>
+                <h3>
+                  <a href={work.href} target="_blank" rel="noreferrer">{work.title}</a>
+                </h3>
+                {/* <p>{work.description}</p> */}
+              </div>
+              <div class="work-item__footer">
+                <div class="work-item__stack" aria-label={`${work.title} 技术栈`}>
+                  {work.stack.map((item) => <span>{item}</span>)}
+                </div>
+                <a class="repo-link" href={work.href} target="_blank" rel="noreferrer">GitHub</a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="panel" aria-label="文章列表">
+        <div class="panel__header">
+          <h2>全部文章</h2>
+          <a href={withBase('/blog/')}>归档</a>
+        </div>
+        <div class="post-list post-list--dense">
+          {posts.map((post) => <PostCard post={post} />)}
+        </div>
+      </section>
+    </main>
+
+    <aside class="content-sidebar" aria-label="站点侧栏">
+      <section class="panel profile-panel">
+        <div class="panel__header">
+          <h2>作者</h2>
+        </div>
+        <p>
+          {SITE.author}，{SITE.university}计算机科学与技术学院信息与通信工程硕士在读，研究方向为计算机视觉。想和你交流学习有关于技术与AI的任何问题，欢迎指导！
+        </p>
+        <div class="sidebar-links">
+          <a href={SITE.github} target="_blank" rel="noreferrer">GitHub</a>
+          <a href={SITE.email}>Email</a>
+          <!-- <a href={withBase('/rss.xml')}>RSS</a> -->
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel__header">
+          <h2>状态</h2>
+        </div>
+        <dl class="status-list">
+          <div>
+            <dt>构建</dt>
+            <dd>Static Astro</dd>
+          </div>
+          <div>
+            <dt>托管</dt>
+            <dd>GitHub Pages</dd>
+          </div>
+          <div>
+            <dt>更新频率</dt>
+            <dd>按项目推进</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="panel">
+        <div class="panel__header">
+          <h2>分类</h2>
+          <a href={withBase('/categories/')}>全部</a>
+        </div>
+        <div class="compact-list">
+          {categories.map(([category, count]) => (
+            <a href={withBase(`/categories/${encodeURIComponent(category)}/`)}>
+              <span>{category}</span>
+              <b>{count}</b>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel__header">
+          <h2>热门标签</h2>
+          <a href={withBase('/tags/')}>全部</a>
+        </div>
+        <div class="tag-cloud tag-cloud--compact">
+          {tags.slice(0, 14).map(([tag, count]) => (
+            <a class="tag" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>
+              #{tag}
+              <span>{count}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    </aside>
   </div>
-
-  <section class="topic-strip" aria-label="Popular tags">
-    {tags.map((tag) => (
-      <a class="tag" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>
-    ))}
-  </section>
 </BaseLayout>

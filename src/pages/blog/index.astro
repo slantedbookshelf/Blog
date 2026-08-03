@@ -10,16 +10,16 @@ const tags = [...new Set(posts.flatMap((post) => post.data.tags))].sort();
 const categories = [...new Set(posts.map((post) => post.data.category))].sort();
 ---
 
-<BaseLayout title="Blog">
+<BaseLayout title="文章">
   <section class="page-title">
-    <p class="eyebrow">Archive</p>
-    <h1>Blog</h1>
-    <p>All posts are sorted by publication date. Use categories or tags to narrow the list.</p>
+    <p class="eyebrow">文章归档</p>
+    <h1>文章</h1>
+    <p>所有文章按发布时间排序，你也可以通过分类或标签缩小范围。</p>
   </section>
 
-  <section class="filter-block" aria-label="Post filters">
+  <section class="filter-block" aria-label="文章筛选">
     <div>
-      <h2>Categories</h2>
+      <h2>分类</h2>
       <div class="tag-row">
         {categories.map((category) => (
           <a class="tag" href={withBase(`/categories/${encodeURIComponent(category)}/`)}>
@@ -29,7 +29,7 @@ const categories = [...new Set(posts.map((post) => post.data.category))].sort();
       </div>
     </div>
     <div>
-      <h2>Tags</h2>
+      <h2>标签</h2>
       <div class="tag-row">
         {tags.map((tag) => (
           <a class="tag" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>

@@ -13,11 +13,11 @@ const tagCounts = posts.reduce<Record<string, number>>((acc, post) => {
 const tags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 ---
 
-<BaseLayout title="Tags">
+<BaseLayout title="标签">
   <section class="page-title">
-    <p class="eyebrow">Topics</p>
-    <h1>Tags</h1>
-    <p>Browse posts by smaller, cross-cutting topics.</p>
+    <p class="eyebrow">主题索引</p>
+    <h1>标签</h1>
+    <p>按更细的主题线索浏览文章。</p>
   </section>
 
   <div class="tag-cloud">
