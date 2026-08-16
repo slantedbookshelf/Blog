@@ -1,0 +1,15 @@
+---
+import InterviewReview from '../components/InterviewReview.astro';
+import { interviewQuestions } from '../data/interviewQuestions';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="八股复习" description="通过主动回忆的方式复习 Java 后端面试题。">
+  <section class="page-title review-title">
+    <p class="eyebrow">Interview Review</p>
+    <h1>八股复习</h1>
+    <p>通过主动回忆的方式复习面试题。这里不会展示答案，先试着在心里完整说出来。</p>
+  </section>
+
+  <InterviewReview questions={interviewQuestions} />
+</BaseLayout>

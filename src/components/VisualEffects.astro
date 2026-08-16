@@ -1,0 +1,90 @@
+---
+interface Props {
+  article?: boolean;
+}
+
+const { article = false } = Astro.props;
+---
+
+<div class="ambient-backdrop" aria-hidden="true">
+  <span class="ambient-blob ambient-blob--one"></span>
+  <span class="ambient-blob ambient-blob--two"></span>
+  <span class="ambient-blob ambient-blob--three"></span>
+</div>
+<div class="warped-grid" aria-hidden="true">
+  <svg class="warped-grid__svg" data-warped-grid-svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" focusable="false">
+    <defs>
+      <filter id="warped-grid-filter" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.007 0.011"
+          numOctaves="1"
+          seed="11"
+          result="gridNoise"
+        >
+          <animate
+            attributeName="baseFrequency"
+            values="0.006 0.010;0.010 0.007;0.007 0.012;0.006 0.010"
+            dur="36s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keyTimes="0;0.34;0.68;1"
+            keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"
+          />
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="gridNoise" scale="10" xChannelSelector="R" yChannelSelector="G">
+          <animate
+            attributeName="scale"
+            values="7;11;8;7"
+            dur="42s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keyTimes="0;0.4;0.72;1"
+            keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"
+          />
+        </feDisplacementMap>
+      </filter>
+      <filter id="warped-grid-filter-mobile" x="-6%" y="-6%" width="112%" height="112%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.006 0.009"
+          numOctaves="1"
+          seed="17"
+          result="gridNoiseMobile"
+        >
+          <animate
+            attributeName="baseFrequency"
+            values="0.005 0.008;0.008 0.006;0.006 0.009;0.005 0.008"
+            dur="40s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keyTimes="0;0.34;0.68;1"
+            keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"
+          />
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="gridNoiseMobile" scale="6" xChannelSelector="R" yChannelSelector="G">
+          <animate
+            attributeName="scale"
+            values="4.5;6.5;5;4.5"
+            dur="44s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keyTimes="0;0.4;0.72;1"
+            keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1"
+          />
+        </feDisplacementMap>
+      </filter>
+      <pattern id="warped-grid-pattern" width="64" height="64" patternUnits="userSpaceOnUse">
+        <path d="M64 0H0V64" fill="none" stroke="currentColor" stroke-width="1" />
+        <path d="M32 0V64M0 32H64" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.38" />
+      </pattern>
+    </defs>
+    <rect class="warped-grid__mesh warped-grid__mesh--desktop" x="-96" y="-96" width="1632" height="1092" fill="url(#warped-grid-pattern)" filter="url(#warped-grid-filter)" />
+    <rect class="warped-grid__mesh warped-grid__mesh--mobile" x="-72" y="-72" width="1584" height="1044" fill="url(#warped-grid-pattern)" filter="url(#warped-grid-filter-mobile)" />
+  </svg>
+</div>
+<div class="pointer-glow" aria-hidden="true"></div>
+<div class="cursor-halo" aria-hidden="true"></div>
+{article && <div class="reading-progress" data-reading-progress aria-hidden="true"></div>}
+
+<script src="../scripts/siteEffects.ts"></script>

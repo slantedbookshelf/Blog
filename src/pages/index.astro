@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
+import { vibeWorks } from '../data/profile';
 import { SITE, daysSince, estimateReadingTime, formatDate, getPostSlug, withBase } from '../lib/site';
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
@@ -21,36 +22,6 @@ const categoryCounts = posts.reduce<Record<string, number>>((acc, post) => {
 const tags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 const categories = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 const runningDays = daysSince(SITE.startDate);
-const vibeWorks = [
-  {
-    name: 'smart-cockpit-agent',
-    title: '多模态智能座舱 Agent',
-    // description: '基于 LangGraph 与 MCP 协议的下一代智能座舱 Agent 系统，探索车载场景里的多模态交互和工具编排。',
-    href: 'https://github.com/jiasuxie92-jpg/smart-cockpit-agent',
-    stack: ['Python', 'LangGraph', 'MCP']
-  },
-  // {
-  //   name: 'Easy_Campus',
-  //   title: '校园美食采购平台',
-  //   description: '面向校园场景的美食采购平台，覆盖商品、订单和采购流程，是一个更贴近业务系统的完整练习。',
-  //   href: 'https://github.com/jiasuxie92-jpg/Easy_Campus',
-  //   stack: ['Java', 'Campus', 'Platform']
-  // },
-  {
-    name: 'HBTI_0427',
-    title: 'HBTI 生日人格测试',
-    // description: '为朋友生日制作的非正式人格测试，把互动问答、结果生成和个人化表达做成一个轻量 Web 体验。',
-    href: 'https://github.com/jiasuxie92-jpg/HBTI_0427',
-    stack: ['TypeScript', 'Interactive', 'Gift']
-  },
-  // {
-  //   name: 'Zhixing_Assistant',
-  //   title: '知行助手',
-  //   description: '面向个人学习和工作效率的 AI assistant 原型，记录把 AI 能力落到日常任务流里的尝试。',
-  //   href: 'https://github.com/jiasuxie92-jpg/Zhixing_Assistant',
-  //   stack: ['AI Agent', 'Workflow', 'Assistant']
-  // }
-];
 ---
 
 <BaseLayout title="首页" wide>
@@ -120,7 +91,7 @@ const vibeWorks = [
                 <h3>
                   <a href={work.href} target="_blank" rel="noreferrer">{work.title}</a>
                 </h3>
-                {/* <p>{work.description}</p> */}
+                <p>{work.description}</p>
               </div>
               <div class="work-item__footer">
                 <div class="work-item__stack" aria-label={`${work.title} 技术栈`}>
@@ -150,12 +121,11 @@ const vibeWorks = [
           <h2>作者</h2>
         </div>
         <p>
-          {SITE.author}，{SITE.university}计算机科学与技术学院信息与通信工程硕士在读，研究方向为计算机视觉。想和你交流学习有关于技术与AI的任何问题，欢迎指导！
+          {SITE.author}，{SITE.university}计算机科学与技术学院信息与通信工程硕士在读，研究方向为计算机视觉。想和你交流学习、技术与 AI 相关的问题，欢迎指教。
         </p>
         <div class="sidebar-links">
           <a href={SITE.github} target="_blank" rel="noreferrer">GitHub</a>
           <a href={SITE.email}>Email</a>
-          <!-- <a href={withBase('/rss.xml')}>RSS</a> -->
         </div>
       </section>
 

@@ -1,0 +1,618 @@
+---
+import type { InterviewQuestion } from '../data/interviewQuestions';
+
+interface Props {
+  questions: InterviewQuestion[];
+}
+
+const { questions } = Astro.props;
+const categories = [...new Set(questions.map((question) => question.category))].sort((a, b) => a.localeCompare(b, 'zh-CN'));
+const serializedQuestions = JSON.stringify(questions).replace(/</g, '\\u003c');
+---
+
+<section class="review-app" data-review-app>
+  <script is:inline type="application/json" data-review-questions set:html={serializedQuestions} />
+
+  <div class="review-view-switch" role="group" aria-label="复习视图">
+    <button class="review-chip is-active" type="button" data-view-switch="random" aria-pressed="true">随机复习</button>
+    <button class="review-chip" type="button" data-view-switch="simulation" aria-pressed="false">模拟面试</button>
+  </div>
+
+  <div class="review-random-area" data-random-area>
+  <section class="review-stats panel" aria-label="复习统计">
+    <div>
+      <span>总题数</span>
+      <strong data-stat-total>{questions.length}</strong>
+    </div>
+    <div>
+      <span>已复习</span>
+      <strong data-stat-reviewed>0</strong>
+    </div>
+    <div>
+      <span>已掌握</span>
+      <strong data-stat-mastered>0</strong>
+    </div>
+    <div>
+      <span>模糊</span>
+      <strong data-stat-fuzzy>0</strong>
+    </div>
+    <div>
+      <span>不会</span>
+      <strong data-stat-unknown>0</strong>
+    </div>
+    <div>
+      <span>未复习</span>
+      <strong data-stat-unreviewed>{questions.length}</strong>
+    </div>
+  </section>
+
+  <section class="review-toolbar panel" aria-label="复习筛选">
+    <div class="panel__header">
+      <h2>复习模式</h2>
+      <span data-question-count>{questions.length} 题</span>
+    </div>
+    <div class="review-chip-row" role="group" aria-label="复习模式">
+      <button class="review-chip is-active" type="button" data-mode="all" aria-pressed="true">全部随机</button>
+      <button class="review-chip" type="button" data-mode="unreviewed" aria-pressed="false">未复习</button>
+      <button class="review-chip" type="button" data-mode="weak" aria-pressed="false">薄弱题</button>
+      <button class="review-chip" type="button" data-mode="unknown" aria-pressed="false">不会</button>
+      <button class="review-chip" type="button" data-mode="fuzzy" aria-pressed="false">模糊</button>
+    </div>
+
+    <div class="review-filter-divider"></div>
+
+    <div class="panel__header panel__header--subtle">
+      <h2>分类</h2>
+      <span>{categories.length} 类</span>
+    </div>
+    <div class="review-chip-row" role="group" aria-label="题目分类">
+      <button class="review-chip is-active" type="button" data-category="all" aria-pressed="true">全部</button>
+      {categories.map((category) => (
+        <button class="review-chip" type="button" data-category={category} aria-pressed="false">{category}</button>
+      ))}
+    </div>
+  </section>
+
+  <article class="review-card panel" data-review-card>
+    <div class="review-card__meta">
+      <span data-question-category></span>
+      <span data-question-difficulty></span>
+      <span data-question-pool></span>
+    </div>
+
+    <h2 data-question-text></h2>
+
+    <div class="review-card__tags" data-question-tags aria-label="题目标签"></div>
+
+    <p class="review-empty" data-review-empty hidden>这个分类下暂时没有符合当前复习条件的题目。</p>
+
+    <div class="review-status-group" role="group" aria-label="标记当前题目掌握状态">
+      <button class="review-status review-status--unknown" type="button" data-review-status="unknown" aria-pressed="false">不会</button>
+      <button class="review-status review-status--fuzzy" type="button" data-review-status="fuzzy" aria-pressed="false">模糊</button>
+      <button class="review-status review-status--mastered" type="button" data-review-status="mastered" aria-pressed="false">已掌握</button>
+    </div>
+
+    <div class="review-actions">
+      <button class="review-secondary" type="button" data-prev-question disabled>← 上一题</button>
+      <button class="review-primary" type="button" data-next-question>换一题 →</button>
+    </div>
+  </article>
+  </div>
+
+  <section class="review-simulation panel" data-simulation-area hidden aria-label="模拟面试">
+    <div class="panel__header">
+      <h2>模拟面试</h2>
+      <span data-sim-summary>选择题量开始</span>
+    </div>
+
+    <div class="simulation-setup" data-sim-setup>
+      <p>随机生成一组题目。每题先主动口述，再根据表现标记状态。</p>
+      <div class="simulation-size-row" role="group" aria-label="选择模拟面试题目数量">
+        <button class="review-chip is-active" type="button" data-sim-size="5" aria-pressed="true">5 题</button>
+        <button class="review-chip" type="button" data-sim-size="10" aria-pressed="false">10 题</button>
+        <button class="review-chip" type="button" data-sim-size="20" aria-pressed="false">20 题</button>
+      </div>
+      <button class="review-primary" type="button" data-sim-start>开始模拟</button>
+    </div>
+
+    <article class="simulation-card" data-sim-card hidden>
+      <div class="review-card__meta">
+        <span data-sim-progress></span>
+        <span data-sim-category></span>
+        <span data-sim-difficulty></span>
+      </div>
+      <h2 data-sim-question></h2>
+      <div class="review-card__tags" data-sim-tags aria-label="模拟题目标签"></div>
+      <div class="review-status-group" role="group" aria-label="标记模拟题状态">
+        <button class="review-status review-status--unknown" type="button" data-sim-status="unknown" aria-pressed="false">不会</button>
+        <button class="review-status review-status--fuzzy" type="button" data-sim-status="fuzzy" aria-pressed="false">模糊</button>
+        <button class="review-status review-status--mastered" type="button" data-sim-status="mastered" aria-pressed="false">已掌握</button>
+      </div>
+      <p class="simulation-note" data-sim-note>标记后进入下一题。</p>
+      <div class="review-actions">
+        <button class="review-primary" type="button" data-sim-next disabled>下一题 →</button>
+      </div>
+    </article>
+
+    <div class="simulation-result" data-sim-result hidden>
+      <p class="eyebrow">模拟完成</p>
+      <h2>这组题复盘完了</h2>
+      <dl>
+        <div><dt>共</dt><dd data-result-total>0 题</dd></div>
+        <div><dt>已掌握</dt><dd data-result-mastered>0</dd></div>
+        <div><dt>模糊</dt><dd data-result-fuzzy>0</dd></div>
+        <div><dt>不会</dt><dd data-result-unknown>0</dd></div>
+        <div><dt>完成率</dt><dd data-result-rate>0%</dd></div>
+      </dl>
+      <div class="review-actions">
+        <button class="review-secondary" type="button" data-sim-again>再来一次</button>
+        <button class="review-primary" type="button" data-return-review>返回随机复习</button>
+      </div>
+    </div>
+  </section>
+</section>
+
+<script>
+  type QuestionDifficulty = 'easy' | 'medium' | 'hard';
+  type ReviewStatus = 'unknown' | 'fuzzy' | 'mastered';
+  type ReviewMode = 'all' | 'unreviewed' | 'weak' | 'unknown' | 'fuzzy';
+  type ReviewView = 'random' | 'simulation';
+
+  interface InterviewQuestion {
+    id: string;
+    category: string;
+    question: string;
+    difficulty?: QuestionDifficulty;
+    tags?: string[];
+  }
+
+  const reviewRoot = document.querySelector<HTMLElement>('[data-review-app]');
+  const REVIEW_STORAGE_KEY = 'slantedbookshelf-interview-review-v1';
+  const difficultyLabels: Record<QuestionDifficulty, string> = {
+    easy: '基础',
+    medium: '进阶',
+    hard: '高阶'
+  };
+
+  function readQuestions(root: HTMLElement) {
+    const dataNode = root.querySelector<HTMLScriptElement>('[data-review-questions]');
+    if (!dataNode?.textContent) return [];
+
+    try {
+      const parsed = JSON.parse(dataNode.textContent) as InterviewQuestion[];
+      return parsed.filter((item) => item.id && item.category && item.question);
+    } catch {
+      return [];
+    }
+  }
+
+  function readStoredStatuses() {
+    const raw = window.localStorage.getItem(REVIEW_STORAGE_KEY);
+    if (!raw) return {};
+
+    try {
+      const parsed = JSON.parse(raw) as Record<string, ReviewStatus>;
+      return Object.fromEntries(
+        Object.entries(parsed).filter(([, status]) => status === 'unknown' || status === 'fuzzy' || status === 'mastered')
+      ) as Record<string, ReviewStatus>;
+    } catch {
+      return {};
+    }
+  }
+
+  if (reviewRoot) {
+    const appRoot = reviewRoot;
+    const questions = readQuestions(appRoot);
+    const statuses = readStoredStatuses();
+    const modeButtons = appRoot.querySelectorAll<HTMLButtonElement>('[data-mode]');
+    const categoryButtons = appRoot.querySelectorAll<HTMLButtonElement>('[data-category]');
+    const statusButtons = appRoot.querySelectorAll<HTMLButtonElement>('[data-review-status]');
+    const nextButton = appRoot.querySelector<HTMLButtonElement>('[data-next-question]');
+    const prevButton = appRoot.querySelector<HTMLButtonElement>('[data-prev-question]');
+    const countEl = appRoot.querySelector<HTMLElement>('[data-question-count]');
+    const categoryEl = appRoot.querySelector<HTMLElement>('[data-question-category]');
+    const difficultyEl = appRoot.querySelector<HTMLElement>('[data-question-difficulty]');
+    const poolEl = appRoot.querySelector<HTMLElement>('[data-question-pool]');
+    const textEl = appRoot.querySelector<HTMLElement>('[data-question-text]');
+    const tagsEl = appRoot.querySelector<HTMLElement>('[data-question-tags]');
+    const emptyEl = appRoot.querySelector<HTMLElement>('[data-review-empty]');
+    const viewButtons = appRoot.querySelectorAll<HTMLButtonElement>('[data-view-switch]');
+    const randomArea = appRoot.querySelector<HTMLElement>('[data-random-area]');
+    const simulationArea = appRoot.querySelector<HTMLElement>('[data-simulation-area]');
+    const simulationSetup = appRoot.querySelector<HTMLElement>('[data-sim-setup]');
+    const simulationCard = appRoot.querySelector<HTMLElement>('[data-sim-card]');
+    const simulationResult = appRoot.querySelector<HTMLElement>('[data-sim-result]');
+    const simulationSizeButtons = appRoot.querySelectorAll<HTMLButtonElement>('[data-sim-size]');
+    const simulationStartButton = appRoot.querySelector<HTMLButtonElement>('[data-sim-start]');
+    const simulationStatusButtons = appRoot.querySelectorAll<HTMLButtonElement>('[data-sim-status]');
+    const simulationNextButton = appRoot.querySelector<HTMLButtonElement>('[data-sim-next]');
+    const simulationAgainButton = appRoot.querySelector<HTMLButtonElement>('[data-sim-again]');
+    const returnReviewButton = appRoot.querySelector<HTMLButtonElement>('[data-return-review]');
+    const simulationSummaryEl = appRoot.querySelector<HTMLElement>('[data-sim-summary]');
+    const simulationProgressEl = appRoot.querySelector<HTMLElement>('[data-sim-progress]');
+    const simulationCategoryEl = appRoot.querySelector<HTMLElement>('[data-sim-category]');
+    const simulationDifficultyEl = appRoot.querySelector<HTMLElement>('[data-sim-difficulty]');
+    const simulationQuestionEl = appRoot.querySelector<HTMLElement>('[data-sim-question]');
+    const simulationTagsEl = appRoot.querySelector<HTMLElement>('[data-sim-tags]');
+    const simulationNoteEl = appRoot.querySelector<HTMLElement>('[data-sim-note]');
+    const resultTotalEl = appRoot.querySelector<HTMLElement>('[data-result-total]');
+    const resultMasteredEl = appRoot.querySelector<HTMLElement>('[data-result-mastered]');
+    const resultFuzzyEl = appRoot.querySelector<HTMLElement>('[data-result-fuzzy]');
+    const resultUnknownEl = appRoot.querySelector<HTMLElement>('[data-result-unknown]');
+    const resultRateEl = appRoot.querySelector<HTMLElement>('[data-result-rate]');
+    let activeCategory = 'all';
+    let activeMode: ReviewMode = 'all';
+    let activeView: ReviewView = 'random';
+    let currentId = '';
+    let historyStack: string[] = [];
+    let selectedSimulationSize = 5;
+    let simulationQueue: InterviewQuestion[] = [];
+    let simulationIndex = 0;
+    let simulationAnswers: Record<string, ReviewStatus> = {};
+
+    function getQuestionById(id: string) {
+      return questions.find((question) => question.id === id);
+    }
+
+    function getBasePool() {
+      return activeCategory === 'all'
+        ? questions
+        : questions.filter((question) => question.category === activeCategory);
+    }
+
+    function getFilteredPool() {
+      const basePool = getBasePool();
+      if (activeMode === 'all') return basePool;
+      if (activeMode === 'unreviewed') return basePool.filter((question) => !statuses[question.id]);
+      if (activeMode === 'weak') return basePool.filter((question) => statuses[question.id] === 'unknown' || statuses[question.id] === 'fuzzy');
+      return basePool.filter((question) => statuses[question.id] === activeMode);
+    }
+
+    function saveStatuses() {
+      window.localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(statuses));
+    }
+
+    function updateStats() {
+      const reviewed = questions.filter((question) => statuses[question.id]).length;
+      const mastered = questions.filter((question) => statuses[question.id] === 'mastered').length;
+      const fuzzy = questions.filter((question) => statuses[question.id] === 'fuzzy').length;
+      const unknown = questions.filter((question) => statuses[question.id] === 'unknown').length;
+      const stats = {
+        total: questions.length,
+        reviewed,
+        mastered,
+        fuzzy,
+        unknown,
+        unreviewed: questions.length - reviewed
+      };
+
+      Object.entries(stats).forEach(([key, value]) => {
+        const item = appRoot.querySelector<HTMLElement>(`[data-stat-${key}]`);
+        if (item) item.textContent = String(value);
+      });
+    }
+
+    function updatePressedState(buttons: NodeListOf<HTMLButtonElement>, value: string, datasetKey: 'mode' | 'category') {
+      buttons.forEach((button) => {
+        const isActive = button.dataset[datasetKey] === value;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-pressed', String(isActive));
+      });
+    }
+
+    function updateButtonGroup(buttons: NodeListOf<HTMLButtonElement>, activeValue: string, key: string) {
+      buttons.forEach((button) => {
+        const isActive = button.dataset[key] === activeValue;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-pressed', String(isActive));
+      });
+    }
+
+    function renderTags(container: HTMLElement | null, tags: string[] | undefined) {
+      if (!container) return;
+      container.replaceChildren();
+      (tags ?? []).forEach((tag) => {
+        const item = document.createElement('span');
+        item.className = 'review-tag';
+        item.textContent = `#${tag}`;
+        container.append(item);
+      });
+    }
+
+    function shuffleQuestions(source: InterviewQuestion[]) {
+      const items = [...source];
+      for (let index = items.length - 1; index > 0; index -= 1) {
+        const targetIndex = Math.floor(Math.random() * (index + 1));
+        [items[index], items[targetIndex]] = [items[targetIndex], items[index]];
+      }
+      return items;
+    }
+
+    function getReviewTone(category: string) {
+      if (category.includes('Java')) return 'java';
+      if (category.includes('Spring')) return 'spring';
+      if (category.includes('MySQL')) return 'mysql';
+      if (category.includes('Redis')) return 'redis';
+      if (category.includes('JVM')) return 'jvm';
+      if (category.includes('网络') || category.includes('HTTP')) return 'network';
+      if (category.includes('操作系统') || category.includes('Linux')) return 'system';
+      return 'default';
+    }
+
+    function setView(nextView: ReviewView) {
+      activeView = nextView;
+      appRoot.dataset.view = nextView;
+      viewButtons.forEach((button) => {
+        const isActive = button.dataset.viewSwitch === nextView;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-pressed', String(isActive));
+      });
+      if (randomArea) randomArea.hidden = nextView !== 'random';
+      if (simulationArea) simulationArea.hidden = nextView !== 'simulation';
+    }
+
+    function updateStatusButtons() {
+      const currentStatus = statuses[currentId];
+      statusButtons.forEach((button) => {
+        const isActive = button.dataset.reviewStatus === currentStatus;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-pressed', String(isActive));
+        button.disabled = !currentId;
+      });
+    }
+
+    function updateControls(poolSize: number) {
+      if (countEl) countEl.textContent = `${poolSize} 题`;
+      if (prevButton) prevButton.disabled = historyStack.length === 0;
+      if (nextButton) nextButton.disabled = poolSize === 0;
+    }
+
+    function renderEmpty(poolSize: number) {
+      currentId = '';
+      appRoot.dataset.reviewTone = 'default';
+      if (categoryEl) categoryEl.textContent = activeCategory === 'all' ? '全部' : activeCategory;
+      if (difficultyEl) difficultyEl.textContent = '';
+      if (poolEl) poolEl.textContent = '0 题';
+      if (textEl) textEl.textContent = '';
+      if (tagsEl) tagsEl.replaceChildren();
+      if (emptyEl) emptyEl.hidden = false;
+      updateControls(poolSize);
+      updateStatusButtons();
+    }
+
+    function renderQuestion(question: InterviewQuestion, poolSize: number) {
+      currentId = question.id;
+      appRoot.dataset.reviewTone = getReviewTone(question.category);
+      if (emptyEl) emptyEl.hidden = true;
+      if (categoryEl) categoryEl.textContent = question.category;
+      if (difficultyEl) difficultyEl.textContent = question.difficulty ? difficultyLabels[question.difficulty] : '未分级';
+      if (poolEl) poolEl.textContent = `${poolSize} 题`;
+      if (textEl) textEl.textContent = question.question;
+      renderTags(tagsEl, question.tags);
+      updateControls(poolSize);
+      updateStatusButtons();
+    }
+
+    function pickQuestion(shouldStoreCurrent = true) {
+      const pool = getFilteredPool();
+      if (!pool.length) {
+        renderEmpty(pool.length);
+        return;
+      }
+
+      let nextQuestion = pool[Math.floor(Math.random() * pool.length)];
+      if (pool.length > 1) {
+        for (let index = 0; index < 8 && nextQuestion.id === currentId; index += 1) {
+          nextQuestion = pool[Math.floor(Math.random() * pool.length)];
+        }
+      }
+
+      if (shouldStoreCurrent && currentId) {
+        historyStack.push(currentId);
+      }
+      renderQuestion(nextQuestion, pool.length);
+    }
+
+    function resetQuestionFlow() {
+      historyStack = [];
+      pickQuestion(false);
+    }
+
+    function goPrevious() {
+      const previousId = historyStack.pop();
+      if (!previousId) return;
+
+      const previousQuestion = getQuestionById(previousId);
+      if (previousQuestion) {
+        renderQuestion(previousQuestion, getFilteredPool().length);
+      }
+    }
+
+    function setStatus(status: ReviewStatus) {
+      if (!currentId) return;
+      statuses[currentId] = status;
+      saveStatuses();
+      updateStats();
+      updateStatusButtons();
+
+      if (!getFilteredPool().some((question) => question.id === currentId)) {
+        pickQuestion(false);
+      } else {
+        updateControls(getFilteredPool().length);
+      }
+    }
+
+    function updateSimulationStatusButtons() {
+      const currentQuestion = simulationQueue[simulationIndex];
+      const currentStatus = currentQuestion ? simulationAnswers[currentQuestion.id] : undefined;
+      simulationStatusButtons.forEach((button) => {
+        const isActive = button.dataset.simStatus === currentStatus;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-pressed', String(isActive));
+        button.disabled = !currentQuestion;
+      });
+      if (simulationNextButton) {
+        simulationNextButton.disabled = !currentStatus;
+        simulationNextButton.textContent = simulationIndex >= simulationQueue.length - 1 ? '完成模拟' : '下一题 →';
+      }
+    }
+
+    function setSimulationSize(size: number) {
+      selectedSimulationSize = size;
+      updateButtonGroup(simulationSizeButtons, String(size), 'simSize');
+    }
+
+    function renderSimulationQuestion() {
+      const question = simulationQueue[simulationIndex];
+      if (!question) {
+        finishSimulation();
+        return;
+      }
+
+      if (simulationSetup) simulationSetup.hidden = true;
+      if (simulationResult) simulationResult.hidden = true;
+      if (simulationCard) simulationCard.hidden = false;
+      if (simulationSummaryEl) simulationSummaryEl.textContent = `${simulationIndex + 1} / ${simulationQueue.length}`;
+      if (simulationProgressEl) simulationProgressEl.textContent = `${simulationIndex + 1} / ${simulationQueue.length}`;
+      appRoot.dataset.reviewTone = getReviewTone(question.category);
+      if (simulationCategoryEl) simulationCategoryEl.textContent = question.category;
+      if (simulationDifficultyEl) simulationDifficultyEl.textContent = question.difficulty ? difficultyLabels[question.difficulty] : '未分级';
+      if (simulationQuestionEl) simulationQuestionEl.textContent = question.question;
+      if (simulationNoteEl) simulationNoteEl.textContent = '标记后进入下一题。';
+      renderTags(simulationTagsEl, question.tags);
+      updateSimulationStatusButtons();
+    }
+
+    function startSimulation() {
+      const size = Math.min(selectedSimulationSize, questions.length);
+      simulationQueue = shuffleQuestions(questions).slice(0, size);
+      simulationIndex = 0;
+      simulationAnswers = {};
+      renderSimulationQuestion();
+    }
+
+    function setSimulationStatus(status: ReviewStatus) {
+      const question = simulationQueue[simulationIndex];
+      if (!question) return;
+      statuses[question.id] = status;
+      simulationAnswers[question.id] = status;
+      saveStatuses();
+      updateStats();
+      updateStatusButtons();
+      updateSimulationStatusButtons();
+    }
+
+    function finishSimulation() {
+      const answered = Object.values(simulationAnswers);
+      const mastered = answered.filter((status) => status === 'mastered').length;
+      const fuzzy = answered.filter((status) => status === 'fuzzy').length;
+      const unknown = answered.filter((status) => status === 'unknown').length;
+      const completionRate = simulationQueue.length ? Math.round((answered.length / simulationQueue.length) * 100) : 0;
+
+      if (simulationSetup) simulationSetup.hidden = true;
+      if (simulationCard) simulationCard.hidden = true;
+      if (simulationResult) simulationResult.hidden = false;
+      if (simulationSummaryEl) simulationSummaryEl.textContent = '已完成';
+      if (resultTotalEl) resultTotalEl.textContent = `${simulationQueue.length} 题`;
+      if (resultMasteredEl) resultMasteredEl.textContent = String(mastered);
+      if (resultFuzzyEl) resultFuzzyEl.textContent = String(fuzzy);
+      if (resultUnknownEl) resultUnknownEl.textContent = String(unknown);
+      if (resultRateEl) resultRateEl.textContent = `${completionRate}%`;
+    }
+
+    function goSimulationNext() {
+      const question = simulationQueue[simulationIndex];
+      if (!question || !simulationAnswers[question.id]) {
+        if (simulationNoteEl) simulationNoteEl.textContent = '先标记这一题，再进入下一题。';
+        return;
+      }
+
+      if (simulationIndex >= simulationQueue.length - 1) {
+        finishSimulation();
+        return;
+      }
+
+      simulationIndex += 1;
+      renderSimulationQuestion();
+    }
+
+    viewButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const nextView = (button.dataset.viewSwitch ?? 'random') as ReviewView;
+        setView(nextView);
+      });
+    });
+
+    modeButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeMode = (button.dataset.mode ?? 'all') as ReviewMode;
+        updatePressedState(modeButtons, activeMode, 'mode');
+        resetQuestionFlow();
+      });
+    });
+
+    categoryButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeCategory = button.dataset.category ?? 'all';
+        updatePressedState(categoryButtons, activeCategory, 'category');
+        resetQuestionFlow();
+      });
+    });
+
+    statusButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const status = button.dataset.reviewStatus as ReviewStatus | undefined;
+        if (status) setStatus(status);
+      });
+    });
+
+    simulationSizeButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const size = Number(button.dataset.simSize ?? '5');
+        setSimulationSize(size);
+      });
+    });
+
+    simulationStatusButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const status = button.dataset.simStatus as ReviewStatus | undefined;
+        if (status) setSimulationStatus(status);
+      });
+    });
+
+    simulationStartButton?.addEventListener('click', startSimulation);
+    simulationNextButton?.addEventListener('click', goSimulationNext);
+    simulationAgainButton?.addEventListener('click', startSimulation);
+    returnReviewButton?.addEventListener('click', () => setView('random'));
+    prevButton?.addEventListener('click', goPrevious);
+    nextButton?.addEventListener('click', () => pickQuestion(true));
+
+    document.addEventListener('keydown', (event) => {
+      const target = event.target;
+      if (target instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(target.tagName)) return;
+
+      if (event.key === '1') {
+        activeView === 'simulation' ? setSimulationStatus('unknown') : setStatus('unknown');
+      }
+      if (event.key === '2') {
+        activeView === 'simulation' ? setSimulationStatus('fuzzy') : setStatus('fuzzy');
+      }
+      if (event.key === '3') {
+        activeView === 'simulation' ? setSimulationStatus('mastered') : setStatus('mastered');
+      }
+      if (event.key.toLowerCase() === 'n' || event.key === ' ') {
+        event.preventDefault();
+        if (activeView === 'simulation') {
+          goSimulationNext();
+        } else {
+          pickQuestion(true);
+        }
+      }
+    });
+
+    setView('random');
+    setSimulationSize(selectedSimulationSize);
+    updateStats();
+    resetQuestionFlow();
+  }
+</script>

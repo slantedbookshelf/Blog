@@ -1,0 +1,305 @@
+---
+const aiApiUrl = import.meta.env.PUBLIC_AI_API_URL ?? '';
+const starterQuestions = [
+  '博主最近在研究什么？',
+  '有哪些值得看的项目？',
+  '这个博客主要写些什么？',
+  '帮我找一篇关于 Astro 的文章。'
+];
+---
+
+<div class="ai-chat" data-ai-chat data-api-url={aiApiUrl}>
+  <button class="ai-chat__trigger" type="button" aria-expanded="false" aria-controls="ai-chat-panel">
+    <span class="ai-chat__trigger-mark" aria-hidden="true">AI</span>
+    <span class="ai-chat__trigger-text">问问博客</span>
+  </button>
+
+  <section class="ai-chat__panel" id="ai-chat-panel" role="dialog" aria-label="博客 AI 助手" hidden>
+    <header class="ai-chat__header">
+      <div>
+        <p class="ai-chat__eyebrow">Blog Guide</p>
+        <h2>博客 AI 助手</h2>
+        <p>了解博主、文章、项目和最近的学习方向。</p>
+      </div>
+      <div class="ai-chat__actions">
+        <button type="button" data-ai-clear>清空</button>
+        <button type="button" data-ai-close aria-label="关闭 AI 聊天">关闭</button>
+      </div>
+    </header>
+
+    <div class="ai-chat__messages" data-ai-messages aria-live="polite"></div>
+
+    <div class="ai-chat__intro" data-ai-intro>
+      <p>你好，我是这个博客的 AI 助手 👋</p>
+      <p>你可以问我博主是谁、做过哪些项目、有哪些文章，或者让我要一篇相关笔记。</p>
+      <div class="ai-chat__suggestions">
+        {starterQuestions.map((question) => (
+          <button type="button" data-ai-question={question}>{question}</button>
+        ))}
+      </div>
+    </div>
+
+    <p class="ai-chat__error" data-ai-error hidden></p>
+
+    <form class="ai-chat__form" data-ai-form>
+      <label class="sr-only" for="ai-chat-input">输入你的问题</label>
+      <textarea
+        class="ai-chat__input"
+        id="ai-chat-input"
+        name="message"
+        rows="2"
+        maxlength="1000"
+        placeholder="问问这个博客、博主或某篇文章..."
+        data-ai-input
+      ></textarea>
+      <button class="ai-chat__send" type="submit" data-ai-send>发送</button>
+    </form>
+  </section>
+</div>
+
+<script>
+  type ChatRole = 'user' | 'assistant';
+
+  interface ChatMessage {
+    role: ChatRole;
+    content: string;
+  }
+
+  interface ChatResponse {
+    message?: ChatMessage;
+    error?: string;
+  }
+
+  const root = document.querySelector<HTMLElement>('[data-ai-chat]');
+  const STORAGE_KEY = 'slantedbookshelf-ai-chat-v1';
+  const MAX_HISTORY = 20;
+  const SEND_HISTORY = 16;
+  const MAX_INPUT_LENGTH = 1000;
+
+  function isSafeHref(href: string) {
+    return href.startsWith('http://') || href.startsWith('https://') || href.startsWith('/');
+  }
+
+  function appendInlineContent(parent: HTMLElement, text: string) {
+    const linkPattern = /\[([^\]]+)\]\(([^)]+)\)/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = linkPattern.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parent.append(document.createTextNode(text.slice(lastIndex, match.index)));
+      }
+
+      const label = match[1];
+      const href = match[2];
+      if (isSafeHref(href)) {
+        const anchor = document.createElement('a');
+        anchor.href = href;
+        anchor.textContent = label;
+        if (href.startsWith('http')) {
+          anchor.target = '_blank';
+          anchor.rel = 'noreferrer';
+        }
+        parent.append(anchor);
+      } else {
+        parent.append(document.createTextNode(label));
+      }
+
+      lastIndex = linkPattern.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+      parent.append(document.createTextNode(text.slice(lastIndex)));
+    }
+  }
+
+  function renderMessageContent(parent: HTMLElement, content: string) {
+    const lines = content.split('\n');
+    lines.forEach((line, index) => {
+      if (index > 0) {
+        parent.append(document.createElement('br'));
+      }
+      appendInlineContent(parent, line);
+    });
+  }
+
+  if (root) {
+    const chatRoot = root;
+    const apiUrl = chatRoot.dataset.apiUrl?.trim() ?? '';
+    const trigger = chatRoot.querySelector<HTMLButtonElement>('.ai-chat__trigger');
+    const panel = chatRoot.querySelector<HTMLElement>('.ai-chat__panel');
+    const closeButton = chatRoot.querySelector<HTMLButtonElement>('[data-ai-close]');
+    const clearButton = chatRoot.querySelector<HTMLButtonElement>('[data-ai-clear]');
+    const messagesEl = chatRoot.querySelector<HTMLElement>('[data-ai-messages]');
+    const introEl = chatRoot.querySelector<HTMLElement>('[data-ai-intro]');
+    const errorEl = chatRoot.querySelector<HTMLElement>('[data-ai-error]');
+    const form = chatRoot.querySelector<HTMLFormElement>('[data-ai-form]');
+    const input = chatRoot.querySelector<HTMLTextAreaElement>('[data-ai-input]');
+    const sendButton = chatRoot.querySelector<HTMLButtonElement>('[data-ai-send]');
+    const suggestionButtons = chatRoot.querySelectorAll<HTMLButtonElement>('[data-ai-question]');
+    let messages: ChatMessage[] = [];
+    let isSending = false;
+
+    function setOpen(open: boolean) {
+      if (!panel || !trigger) return;
+      panel.hidden = !open;
+      trigger.setAttribute('aria-expanded', String(open));
+      chatRoot.dataset.open = String(open);
+      if (open) {
+        window.setTimeout(() => input?.focus(), 30);
+      }
+    }
+
+    function setError(message = '') {
+      if (!errorEl) return;
+      errorEl.textContent = message;
+      errorEl.hidden = !message;
+    }
+
+    function saveMessages() {
+      const safeMessages = messages.slice(-MAX_HISTORY);
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(safeMessages));
+    }
+
+    function loadMessages() {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw) as ChatMessage[];
+        messages = parsed
+          .filter((message) => (message.role === 'user' || message.role === 'assistant') && typeof message.content === 'string')
+          .slice(-MAX_HISTORY);
+      } catch {
+        messages = [];
+      }
+    }
+
+    function scrollToBottom() {
+      if (messagesEl) {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+    }
+
+    function renderMessages() {
+      if (!messagesEl || !introEl) return;
+      messagesEl.replaceChildren();
+      introEl.hidden = messages.length > 0;
+
+      messages.forEach((message) => {
+        const item = document.createElement('article');
+        item.className = `ai-chat__message ai-chat__message--${message.role}`;
+
+        const label = document.createElement('span');
+        label.className = 'ai-chat__message-label';
+        label.textContent = message.role === 'user' ? '你' : 'AI';
+
+        const body = document.createElement('p');
+        renderMessageContent(body, message.content);
+
+        item.append(label, body);
+        messagesEl.append(item);
+      });
+
+      scrollToBottom();
+    }
+
+    function setSending(nextState: boolean) {
+      isSending = nextState;
+      if (sendButton) {
+        sendButton.disabled = nextState;
+        sendButton.textContent = nextState ? '发送中' : '发送';
+      }
+      if (input) {
+        input.disabled = nextState;
+      }
+    }
+
+    async function sendMessage(content: string) {
+      const question = content.trim();
+      if (!question) {
+        setError('请输入一个问题。');
+        return;
+      }
+      if (question.length > MAX_INPUT_LENGTH) {
+        setError(`单条问题不能超过 ${MAX_INPUT_LENGTH} 个字符。`);
+        return;
+      }
+      if (isSending) return;
+      if (!apiUrl) {
+        setError('AI API 尚未配置。请在部署时设置 PUBLIC_AI_API_URL。');
+        return;
+      }
+
+      setError();
+      const userMessage: ChatMessage = { role: 'user', content: question };
+      messages = [...messages, userMessage].slice(-MAX_HISTORY);
+      renderMessages();
+      saveMessages();
+      setSending(true);
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            messages: messages.slice(-SEND_HISTORY)
+          })
+        });
+        const payload = await response.json() as ChatResponse;
+
+        if (!response.ok || !payload.message?.content) {
+          throw new Error(payload.error || 'AI 暂时没有返回有效回答。');
+        }
+
+        messages = [...messages, payload.message].slice(-MAX_HISTORY);
+        renderMessages();
+        saveMessages();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'AI 请求失败，请稍后再试。';
+        setError(message);
+      } finally {
+        setSending(false);
+      }
+    }
+
+    trigger?.addEventListener('click', () => setOpen(panel?.hidden ?? true));
+    closeButton?.addEventListener('click', () => setOpen(false));
+    clearButton?.addEventListener('click', () => {
+      messages = [];
+      window.localStorage.removeItem(STORAGE_KEY);
+      setError();
+      renderMessages();
+      input?.focus();
+    });
+
+    suggestionButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const question = button.dataset.aiQuestion;
+        if (question && input) {
+          input.value = question;
+          void sendMessage(question);
+        }
+      });
+    });
+
+    form?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!input) return;
+      const value = input.value;
+      input.value = '';
+      void sendMessage(value);
+    });
+
+    input?.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        form?.requestSubmit();
+      }
+    });
+
+    loadMessages();
+    renderMessages();
+  }
+</script>

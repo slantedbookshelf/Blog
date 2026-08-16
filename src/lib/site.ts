@@ -1,5 +1,5 @@
 export const SITE = {
-  title: "SlantedBookshelf",
+  title: 'SlantedBookshelf',
   author: 'SlantedBookshelf',
   description: '倾斜书架，记录一下！',
   github: 'https://github.com/jiasuxie92-jpg',

@@ -1,5 +1,7 @@
 ---
 import Header from '../components/Header.astro';
+import AiChat from '../components/AiChat.astro';
+import VisualEffects from '../components/VisualEffects.astro';
 import { SITE, withBase } from '../lib/site';
 import '../styles/global.css';
 
@@ -7,9 +9,10 @@ interface Props {
   title?: string;
   description?: string;
   wide?: boolean;
+  article?: boolean;
 }
 
-const { title, description = SITE.description, wide = false } = Astro.props;
+const { title, description = SITE.description, wide = false, article = false } = Astro.props;
 const pageTitle = title ? `${title} | ${SITE.title}` : SITE.title;
 ---
 
@@ -34,12 +37,20 @@ const pageTitle = title ? `${title} | ${SITE.title}` : SITE.title;
     <link rel="canonical" href={Astro.url.href} />
   </head>
   <body>
+    <VisualEffects article={article} />
     <Header />
     <main class:list={['page-shell', wide && 'page-shell--wide']}>
       <slot />
     </main>
     <footer class="site-footer">
-      <p>&copy; {new Date().getFullYear()} {SITE.author}. 由 Astro 构建。</p>
+      <div class="site-footer__inner">
+        <p>&copy; {new Date().getFullYear()} {SITE.author}. Built with Astro.</p>
+        <nav aria-label="页脚链接">
+          <a href={SITE.github} target="_blank" rel="noreferrer">GitHub</a>
+          <a href={SITE.email}>Email</a>
+        </nav>
+      </div>
     </footer>
+    <AiChat />
   </body>
 </html>
