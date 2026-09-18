@@ -199,6 +199,81 @@ function getCodeLanguage(pre: HTMLPreElement, code: HTMLElement | null) {
   return match?.[1]?.toUpperCase() ?? 'CODE';
 }
 
+function initProblemIndexScroll() {
+  const indexLinks = [...document.querySelectorAll<HTMLAnchorElement>('.problem-index li a[href^="#"]')];
+  const headingItems = indexLinks
+    .map((link) => {
+      const id = decodeURIComponent(link.hash.slice(1));
+      const target = document.getElementById(id);
+      return target ? { link, target } : null;
+    })
+    .filter((item): item is { link: HTMLAnchorElement; target: HTMLElement } => item !== null);
+
+  if (!headingItems.length) return;
+
+  const setActiveLink = (activeLink: HTMLAnchorElement) => {
+    indexLinks.forEach((link) => {
+      const isActive = link === activeLink;
+      link.classList.toggle('is-active', isActive);
+      if (isActive) {
+        link.setAttribute('aria-current', 'location');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+  };
+
+  const syncActiveLink = () => {
+    const marker = 96;
+    let active = headingItems[0];
+
+    for (const item of headingItems) {
+      if (item.target.getBoundingClientRect().top <= marker) {
+        active = item;
+      } else {
+        break;
+      }
+    }
+
+    const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+    setActiveLink(nearBottom ? headingItems[headingItems.length - 1].link : active.link);
+  };
+
+  let ticking = false;
+  const requestSync = () => {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(() => {
+      syncActiveLink();
+      ticking = false;
+    });
+  };
+
+  document.querySelectorAll<HTMLAnchorElement>('.problem-index a[href^="#"]').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      const hash = link.hash;
+      if (!hash) return;
+
+      const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+      if (!target) return;
+
+      event.preventDefault();
+      target.scrollIntoView({
+        behavior: reducedMotion.matches ? 'auto' : 'smooth',
+        block: 'start'
+      });
+      history.pushState(null, '', hash);
+      if (link.closest('li')) {
+        setActiveLink(link);
+      }
+    });
+  });
+
+  window.addEventListener('scroll', requestSync, { passive: true });
+  window.addEventListener('resize', requestSync, { passive: true });
+  syncActiveLink();
+}
+
 initHeaderState();
 initActiveNav();
 initBackgroundMotionPreference();
@@ -206,3 +281,4 @@ initPointerEffects();
 initInteractiveSurfaces();
 initRevealAndStagger();
 initCodeBlocks();
+initProblemIndexScroll();

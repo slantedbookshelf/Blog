@@ -13,49 +13,96 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 const index = posts.findIndex((item) => item.id === post.id);
 const previous = posts[index + 1];
 const next = posts[index - 1];
+const indexGroups: { title: string; slug: string; items: { title: string; slug: string }[] }[] = [];
+
+for (const heading of headings) {
+  if (heading.depth === 2) {
+    indexGroups.push({ title: heading.text, slug: heading.slug, items: [] });
+  }
+
+  if (heading.depth === 3 && /^\d+、/.test(heading.text)) {
+    if (!indexGroups.length) {
+      indexGroups.push({ title: '题目索引', slug: heading.slug, items: [] });
+    }
+
+    indexGroups[indexGroups.length - 1].items.push({
+      title: heading.text,
+      slug: heading.slug
+    });
+  }
+}
+
+const problemCount = indexGroups.reduce((total, group) => total + group.items.length, 0);
+const showProblemIndex = problemCount >= 12;
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description} article>
-  <article class="article">
-    <header class="article-header">
-      <div class="post-card__meta">
-        <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
-        <a href={withBase(`/categories/${encodeURIComponent(post.data.category)}/`)}>
-          {post.data.category}
-        </a>
-      </div>
-      <h1>{post.data.title}</h1>
-      <p>{post.data.description}</p>
-      <div class="tag-row">
-        {post.data.tags.map((tag) => (
-          <a class="tag" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>
-        ))}
-      </div>
-    </header>
+<BaseLayout title={post.data.title} description={post.data.description} article wide={showProblemIndex}>
+  <div class:list={['article-layout', showProblemIndex && 'article-layout--with-index']}>
+    {showProblemIndex && (
+      <aside class="problem-index" aria-label="题目索引">
+        <div class="problem-index__inner">
+          <p class="problem-index__label">题目索引</p>
+          <nav>
+            {indexGroups.map((group) => group.items.length > 0 && (
+              <section class="problem-index__group">
+                <a class="problem-index__category" href={`#${group.slug}`}>{group.title}</a>
+                <ol>
+                  {group.items.map((item) => (
+                    <li>
+                      <a href={`#${item.slug}`}>{item.title}</a>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ))}
+          </nav>
+        </div>
+      </aside>
+    )}
 
-    <div class="prose">
-      <Content />
+    <div class="article-layout__body">
+      <article class="article">
+        <header class="article-header">
+          <div class="post-card__meta">
+            <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+            <a href={withBase(`/categories/${encodeURIComponent(post.data.category)}/`)}>
+              {post.data.category}
+            </a>
+          </div>
+          <h1>{post.data.title}</h1>
+          <p>{post.data.description}</p>
+          <div class="tag-row">
+            {post.data.tags.map((tag) => (
+              <a class="tag" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>
+            ))}
+          </div>
+        </header>
+
+        <div class="prose">
+          <Content />
+        </div>
+      </article>
+
+      <nav class="post-nav" aria-label="文章导航">
+        {previous ? (
+          <a href={withBase(`/posts/${getPostSlug(previous.id)}/`)}>
+            <span>上一篇</span>
+            {previous.data.title}
+          </a>
+        ) : <span></span>}
+        {next ? (
+          <a href={withBase(`/posts/${getPostSlug(next.id)}/`)}>
+            <span>下一篇</span>
+            {next.data.title}
+          </a>
+        ) : <span></span>}
+      </nav>
     </div>
-  </article>
-
-  <nav class="post-nav" aria-label="文章导航">
-    {previous ? (
-      <a href={withBase(`/posts/${getPostSlug(previous.id)}/`)}>
-        <span>上一篇</span>
-        {previous.data.title}
-      </a>
-    ) : <span></span>}
-    {next ? (
-      <a href={withBase(`/posts/${getPostSlug(next.id)}/`)}>
-        <span>下一篇</span>
-        {next.data.title}
-      </a>
-    ) : <span></span>}
-  </nav>
+  </div>
 </BaseLayout>
