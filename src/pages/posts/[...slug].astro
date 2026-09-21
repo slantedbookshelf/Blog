@@ -19,7 +19,19 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft))
 const index = posts.findIndex((item) => item.id === post.id);
 const previous = posts[index + 1];
 const next = posts[index - 1];
-const indexGroups: { title: string; slug: string; items: { title: string; slug: string }[] }[] = [];
+type Difficulty = '简单' | '中等' | '困难';
+
+const difficultyClass: Record<Difficulty, string> = {
+  简单: 'difficulty-badge--easy',
+  中等: 'difficulty-badge--medium',
+  困难: 'difficulty-badge--hard'
+};
+const difficultyPattern = /\s*(简单|中等|困难)$/;
+const indexGroups: {
+  title: string;
+  slug: string;
+  items: { title: string; slug: string; difficulty?: Difficulty }[];
+}[] = [];
 
 for (const heading of headings) {
   if (heading.depth === 2) {
@@ -31,9 +43,12 @@ for (const heading of headings) {
       indexGroups.push({ title: '题目索引', slug: heading.slug, items: [] });
     }
 
+    const difficulty = heading.text.match(difficultyPattern)?.[1] as Difficulty | undefined;
+
     indexGroups[indexGroups.length - 1].items.push({
-      title: heading.text,
-      slug: heading.slug
+      title: heading.text.replace(difficultyPattern, '').trim(),
+      slug: heading.slug,
+      difficulty
     });
   }
 }
@@ -55,7 +70,14 @@ const showProblemIndex = problemCount >= 12;
                 <ol>
                   {group.items.map((item) => (
                     <li>
-                      <a href={`#${item.slug}`}>{item.title}</a>
+                      <a href={`#${item.slug}`}>
+                        <span class="problem-index__item-title">{item.title}</span>
+                        {item.difficulty && (
+                          <span class:list={['difficulty-badge', difficultyClass[item.difficulty]]}>
+                            {item.difficulty}
+                          </span>
+                        )}
+                      </a>
                     </li>
                   ))}
                 </ol>

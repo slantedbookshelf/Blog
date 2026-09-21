@@ -7,7 +7,11 @@ import { SITE, daysSince, estimateReadingTime, formatDate, getPostSlug, withBase
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
-const latestPost = posts[0];
+const pinnedPosts = posts.filter((post) => post.data.pinned);
+const regularPosts = posts.filter((post) => !post.data.pinned);
+const latestPost = regularPosts[0] ?? posts[0];
+const listedPosts = pinnedPosts.length > 0 ? regularPosts : posts;
+const listedPostsHeading = pinnedPosts.length > 0 ? '更多文章' : '全部文章';
 const lastUpdated = posts[0]?.data.updatedDate ?? posts[0]?.data.pubDate;
 const tagCounts = posts.reduce<Record<string, number>>((acc, post) => {
   post.data.tags.forEach((tag) => {
@@ -78,6 +82,35 @@ const runningDays = daysSince(SITE.startDate);
         </section>
       )}
 
+      {pinnedPosts.length > 0 && (
+        <section class="panel pinned-panel" aria-label="置顶文章">
+          <div class="panel__header">
+            <h2>置顶文章</h2>
+            <span>{pinnedPosts.length} 篇</span>
+          </div>
+          <div class="pinned-list">
+            {pinnedPosts.map((post) => (
+              <article class="pinned-item interactive-surface">
+                <div class="pinned-item__body">
+                  <h3>
+                    <a href={withBase(`/posts/${getPostSlug(post.id)}/`)}>{post.data.title}</a>
+                  </h3>
+                  <p>{post.data.description}</p>
+                  <div class="post-card__meta" aria-label="文章元数据">
+                    <time class="post-card__date" datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+                    <span>{post.data.category}</span>
+                    <span>{estimateReadingTime(post.body ?? post.data.description)} 分钟</span>
+                    {post.data.tags.slice(0, 3).map((tag) => (
+                      <a href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section class="panel works-panel" aria-label="vibe coding作品">
         <div class="panel__header">
           <h2>vibe coding作品</h2>
@@ -106,11 +139,11 @@ const runningDays = daysSince(SITE.startDate);
 
       <section class="panel" aria-label="文章列表">
         <div class="panel__header">
-          <h2>全部文章</h2>
+          <h2>{listedPostsHeading}</h2>
           <a href={withBase('/blog/')}>归档</a>
         </div>
         <div class="post-list post-list--dense">
-          {posts.map((post) => <PostCard post={post} />)}
+          {listedPosts.map((post) => <PostCard post={post} />)}
         </div>
       </section>
     </main>
