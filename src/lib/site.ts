@@ -2,8 +2,11 @@ export const SITE = {
   title: 'SlantedBookshelf',
   author: 'SlantedBookshelf',
   description: '倾斜书架，记录一下！',
-  github: 'https://github.com/jiasuxie92-jpg',
+  github: 'https://github.com/slantedbookshelf',
   email: 'mailto:13137112415@163.com',
+  photographyUrl: '',
+  photographyCover: '',
+  neteaseMusicUrl: '',
   location: '北京交通大学',
   university: '北京交通大学',
   startDate: '2026-06-29'

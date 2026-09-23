@@ -1,15 +1,20 @@
 ---
 import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
 import { vibeWorks } from '../data/profile';
 import { SITE, daysSince, estimateReadingTime, formatDate, getPostSlug, withBase } from '../lib/site';
+import jevCover from '../content/posts/what-is-jev-pics/jev-system-one-cover.jpeg';
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 const pinnedPosts = posts.filter((post) => post.data.pinned);
 const regularPosts = posts.filter((post) => !post.data.pinned);
 const latestPost = regularPosts[0] ?? posts[0];
+const latestPostSlug = latestPost ? getPostSlug(latestPost.id) : '';
+const latestPostHref = latestPost ? withBase(`/posts/${latestPostSlug}/`) : '';
+const latestPostCover = latestPostSlug === 'what-is-jev' ? jevCover : undefined;
 const listedPosts = pinnedPosts.length > 0 ? regularPosts : posts;
 const listedPostsHeading = pinnedPosts.length > 0 ? '更多文章' : '全部文章';
 const lastUpdated = posts[0]?.data.updatedDate ?? posts[0]?.data.pubDate;
@@ -61,12 +66,12 @@ const runningDays = daysSince(SITE.startDate);
         <section class="panel latest-panel" aria-label="最近更新">
           <div class="panel__header">
             <h2>最近更新</h2>
-            <a href={withBase(`/posts/${getPostSlug(latestPost.id)}/`)}>打开</a>
+            <a href={latestPostHref}>打开</a>
           </div>
-          <article class="latest-entry">
-            <div>
+          <article class:list={['latest-entry', { 'latest-entry--with-cover': latestPostCover }]}>
+            <div class="latest-entry__body">
               <h3>
-                <a href={withBase(`/posts/${getPostSlug(latestPost.id)}/`)}>{latestPost.data.title}</a>
+                <a href={latestPostHref}>{latestPost.data.title}</a>
               </h3>
               <p>{latestPost.data.description}</p>
               <div class="post-card__meta">
@@ -78,6 +83,16 @@ const runningDays = daysSince(SITE.startDate);
                 ))}
               </div>
             </div>
+            {latestPostCover && (
+              <a class="latest-entry__cover" href={latestPostHref} aria-label={`阅读《${latestPost.data.title}》`}>
+                <Image
+                  src={latestPostCover}
+                  alt="Jev System One 模型封面插图"
+                  width={360}
+                  height={203}
+                />
+              </a>
+            )}
           </article>
         </section>
       )}

@@ -1,16 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE } from '../lib/site';
+import { SITE, withBase } from '../lib/site';
 ---
 
-<BaseLayout title="关于">
-  <section class="page-title">
-    <p class="eyebrow">关于</p>
-    <h1>{SITE.author}</h1>
+<BaseLayout title="关于" wide>
+  <section class="page-title about-hero">
+    <div>
+      <p class="eyebrow">关于</p>
+      <h1>{SITE.author}</h1>
+    </div>
     <p>{SITE.description}</p>
   </section>
 
-  <section class="about-grid">
+  <section class="about-grid about-summary">
     <div>
       <h2>现在</h2>
       <p>
@@ -23,6 +25,69 @@ import { SITE } from '../lib/site';
         <li><a href={SITE.github} target="_blank" rel="noreferrer">GitHub</a></li>
         <li><a href={SITE.email}>Email</a></li>
       </ul>
+    </div>
+  </section>
+
+  <section class="personal-world" aria-labelledby="personal-world-title">
+    <header class="personal-world__header">
+      <div>
+        <p class="eyebrow">生活切面</p>
+        <h2 id="personal-world-title">技术之外</h2>
+      </div>
+      <p>
+        除了代码，我也在用照片、文字和音乐记录生活。它们散落在不同的地方，这里是通往它们的入口。
+      </p>
+    </header>
+
+    <div class="personal-world__list">
+      <article class="personal-world__item personal-world__item--photography">
+        <div class="personal-world__copy">
+          <p class="personal-world__index">01 / 摄影</p>
+          <h3>摄影记录</h3>
+          <p>记录城市、旅行和一些容易被忽略的日常瞬间。</p>
+          {SITE.photographyUrl ? (
+            <a class="personal-world__link" href={SITE.photographyUrl} target="_blank" rel="noreferrer">访问摄影站 →</a>
+          ) : (
+            <span class="personal-world__pending">摄影站链接待补充</span>
+          )}
+        </div>
+        <div class="personal-world__photo" aria-label={SITE.photographyCover ? '摄影记录封面' : '摄影封面待补充'}>
+          {SITE.photographyCover ? (
+            <img src={withBase(SITE.photographyCover)} alt="摄影记录封面" loading="lazy" decoding="async" />
+          ) : (
+            <div class="personal-world__photo-placeholder" aria-hidden="true">
+              <span>PHOTO JOURNAL</span>
+              <b>摄影封面待补充</b>
+            </div>
+          )}
+        </div>
+      </article>
+
+      <article class="personal-world__item personal-world__item--reading">
+        <div class="personal-world__copy">
+          <p class="personal-world__index">02 / 阅读</p>
+          <h3>阅读记录</h3>
+          <p>读完一本书后，偶尔写下一点感受。不是完整书评，更像是留给未来自己的阅读坐标。</p>
+          <a class="personal-world__link" href={withBase('/blog/')}>浏览博客文章 →</a>
+        </div>
+      </article>
+
+      <article class="personal-world__item personal-world__item--music">
+        <div class="personal-world__copy">
+          <p class="personal-world__index">03 / 音乐</p>
+          <h3>我的音乐</h3>
+          <p>音乐陪我写代码、坐车和散步，这里会通向我在网易云保存的歌与不同阶段的心情。</p>
+          {SITE.neteaseMusicUrl ? (
+            <a class="personal-world__link" href={SITE.neteaseMusicUrl} target="_blank" rel="noreferrer">去网易云听听 →</a>
+          ) : (
+            <span class="personal-world__pending">网易云主页待补充</span>
+          )}
+        </div>
+        <div class="personal-world__music-mark" aria-hidden="true">
+          <span>NETEASE</span>
+          <b>MUSIC PROFILE</b>
+        </div>
+      </article>
     </div>
   </section>
 </BaseLayout>

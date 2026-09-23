@@ -21,10 +21,10 @@ const previous = posts[index + 1];
 const next = posts[index - 1];
 type Difficulty = '简单' | '中等' | '困难';
 
-const difficultyClass: Record<Difficulty, string> = {
-  简单: 'difficulty-badge--easy',
-  中等: 'difficulty-badge--medium',
-  困难: 'difficulty-badge--hard'
+const difficultyDotClass: Record<Difficulty, string> = {
+  简单: 'difficulty-dot--easy',
+  中等: 'difficulty-dot--medium',
+  困难: 'difficulty-dot--hard'
 };
 const difficultyPattern = /\s*(简单|中等|困难)$/;
 const indexGroups: {
@@ -73,9 +73,11 @@ const showProblemIndex = problemCount >= 12;
                       <a href={`#${item.slug}`}>
                         <span class="problem-index__item-title">{item.title}</span>
                         {item.difficulty && (
-                          <span class:list={['difficulty-badge', difficultyClass[item.difficulty]]}>
-                            {item.difficulty}
-                          </span>
+                          <span
+                            class:list={['difficulty-dot', difficultyDotClass[item.difficulty]]}
+                            aria-label={`难度：${item.difficulty}`}
+                            title={item.difficulty}
+                          />
                         )}
                       </a>
                     </li>
