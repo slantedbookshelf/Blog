@@ -1,0 +1,380 @@
+---
+import { Image } from 'astro:assets';
+import photo1 from '../assets/photo-stack/photo-1.webp';
+import photo2 from '../assets/photo-stack/photo-2.webp';
+import photo3 from '../assets/photo-stack/photo-3.webp';
+import photo4 from '../assets/photo-stack/photo-4.webp';
+import photo5 from '../assets/photo-stack/photo-5.webp';
+
+const photos = [
+  { title: '下线时刻', note: '请勿打扰', number: '01', image: photo1, tone: '#dedbd7' },
+  { title: '金色心情', note: '柔软但不低调', number: '02', image: photo2, tone: '#f2c966' },
+  { title: '神游片刻', note: '暂时离开地球', number: '03', image: photo3, tone: '#8f799d' },
+  { title: '隐藏关卡', note: '小小角色，大大任务', number: '04', image: photo4, tone: '#aeb8ce' },
+  { title: '正在思考', note: '大概率想太多', number: '05', image: photo5, tone: '#e7dca5' }
+];
+---
+
+<section class="photo-stack" data-photo-stack aria-label="可拖拽插画卡组" aria-describedby="photo-stack-instructions">
+  <p class="sr-only" id="photo-stack-instructions">鼠标移入展开卡组，移出恢复叠放；可以拖拽卡片调整顺序，点击卡片查看大图。</p>
+  <div class="photo-stack__stage" data-photo-stage data-mode="stack">
+    <div class="photo-stack__deck" data-photo-deck aria-live="polite">
+      {photos.map((photo, index) => (
+        <button
+          class="photo-stack__card"
+          type="button"
+          data-photo-card
+          data-title={photo.title}
+          data-note={photo.note}
+          data-number={photo.number}
+          data-full-src={photo.image.src}
+          aria-label={`查看插画：${photo.title}`}
+          style={`--card-tone: ${photo.tone}; --stack-x: ${index * 4}px; --stack-y: ${index * 4}px; --stack-r: ${[-2.4, 2, -1.2, 3, -2.8][index]}deg; --fan-x: ${(index - 2) * 43}px; --fan-x-mobile: ${(index - 2) * 27.5}px; --fan-y: ${Math.abs(index - 2) * 8}px; --fan-r: ${(index - 2) * 4.5}deg; z-index: ${photos.length - index}`}
+        >
+          <span class="photo-stack__image">
+            <Image src={photo.image} alt="" width={240} height={240} loading={index === 0 ? 'eager' : 'lazy'} />
+            <span class="photo-stack__shine" aria-hidden="true"></span>
+          </span>
+          <span class="photo-stack__caption">
+            <span>
+              <b>{photo.title}</b>
+              <small>{photo.note}</small>
+            </span>
+            <em>{photo.number}</em>
+          </span>
+        </button>
+      ))}
+    </div>
+
+  </div>
+
+  <dialog class="photo-stack__dialog" data-photo-dialog aria-label="插画预览">
+    <button class="photo-stack__close" type="button" data-photo-close>关闭</button>
+    <figure>
+      <img data-photo-dialog-image alt="" />
+      <figcaption>
+        <span>
+          <b data-photo-dialog-title></b>
+          <small data-photo-dialog-note></small>
+        </span>
+        <em data-photo-dialog-number></em>
+      </figcaption>
+    </figure>
+  </dialog>
+</section>
+
+<script src="../scripts/kineticPhotoStack.ts"></script>
+
+<style>
+  .photo-stack {
+    width: min(100%, 380px);
+    min-width: 0;
+    justify-self: end;
+  }
+
+  .photo-stack__stage {
+    position: relative;
+    isolation: isolate;
+    height: 264px;
+    overflow: visible;
+  }
+
+  .photo-stack__stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 54%, color-mix(in srgb, var(--accent-soft), transparent 16%), transparent 64%);
+    opacity: 0.72;
+    pointer-events: none;
+  }
+
+  .photo-stack__card:focus-visible,
+  .photo-stack__close:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .photo-stack__deck {
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    width: 138px;
+    height: 174px;
+    transform: translate(-50%, -50%);
+    perspective: 900px;
+  }
+
+  .photo-stack__card {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 7px 7px 0;
+    border: 1px solid rgb(23 26 23 / 0.18);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--card-tone), white 74%);
+    box-shadow: 0 12px 28px rgb(23 26 23 / 0.14), 0 2px 5px rgb(23 26 23 / 0.08);
+    color: #171a17;
+    cursor: grab;
+    font: inherit;
+    text-align: left;
+    touch-action: none;
+    transform: translate3d(var(--stack-x), var(--stack-y), 0) rotate(var(--stack-r));
+    transform-origin: 50% 88%;
+    transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease, opacity 200ms ease;
+    user-select: none;
+  }
+
+  .photo-stack__card.is-top:active {
+    cursor: grabbing;
+  }
+
+  .photo-stack__card.is-dragging {
+    transform: translate3d(var(--drag-x), var(--drag-y), 0) rotate(var(--drag-r));
+    transition: none;
+  }
+
+  .photo-stack__stage[data-mode='fan'] .photo-stack__deck {
+    left: 50%;
+  }
+
+  .photo-stack__stage[data-mode='fan'] .photo-stack__card {
+    cursor: pointer;
+    transform: translate3d(var(--fan-x), var(--fan-y), 0) rotate(var(--fan-r)) scale(0.78);
+  }
+
+  .photo-stack__stage[data-mode='fan'] .photo-stack__card.is-dragging {
+    cursor: grabbing;
+    transform:
+      translate3d(calc(var(--fan-x) + var(--drag-x)), calc(var(--fan-y) + var(--drag-y)), 0)
+      rotate(calc(var(--fan-r) + var(--drag-r)))
+      scale(0.82);
+  }
+
+  .photo-stack__stage[data-mode='fan'] .photo-stack__card:hover,
+  .photo-stack__stage[data-mode='fan'] .photo-stack__card:focus-visible {
+    box-shadow: 0 18px 38px rgb(23 26 23 / 0.2);
+    transform: translate3d(var(--fan-x), calc(var(--fan-y) - 12px), 0) rotate(var(--fan-r)) scale(0.82);
+  }
+
+  .photo-stack__image {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--card-tone);
+  }
+
+  .photo-stack__image :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    transition: filter 240ms ease, transform 480ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .photo-stack__card:hover .photo-stack__image :global(img) {
+    filter: saturate(1.04);
+    transform: scale(1.025);
+  }
+
+  .photo-stack__shine {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 34%, rgb(255 255 255 / 0.25) 48%, transparent 62%);
+    pointer-events: none;
+    transform: translateX(-120%);
+    transition: transform 680ms ease;
+  }
+
+  .photo-stack__card:hover .photo-stack__shine {
+    transform: translateX(120%);
+  }
+
+  .photo-stack__caption {
+    display: flex;
+    height: 39px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 0 3px;
+  }
+
+  .photo-stack__caption > span {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .photo-stack__caption b,
+  .photo-stack__caption small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .photo-stack__caption b {
+    font-size: 0.67rem;
+  }
+
+  .photo-stack__caption small,
+  .photo-stack__caption em {
+    color: #686d66;
+    font-size: 0.55rem;
+    font-style: normal;
+  }
+
+  .photo-stack__caption em {
+    font-family: var(--mono);
+  }
+
+  .photo-stack__card.is-thrown-right {
+    animation: photo-throw-right 300ms ease-in forwards;
+  }
+
+  .photo-stack__card.is-thrown-left {
+    animation: photo-throw-left 300ms ease-in forwards;
+  }
+
+  .photo-stack__dialog {
+    width: min(560px, calc(100vw - 32px));
+    max-width: none;
+    padding: 0;
+    overflow: visible;
+    border: 1px solid color-mix(in srgb, var(--border-strong), transparent 12%);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 30px 90px rgb(10 14 10 / 0.38);
+  }
+
+  :global(body.has-photo-dialog) {
+    overflow: hidden;
+  }
+
+  .photo-stack__dialog::backdrop {
+    background: rgb(13 17 14 / 0.74);
+    backdrop-filter: blur(12px);
+  }
+
+  .photo-stack__dialog figure {
+    margin: 0;
+  }
+
+  .photo-stack__dialog img {
+    display: block;
+    width: 100%;
+    max-height: min(68vh, 560px);
+    object-fit: cover;
+    background: var(--surface-soft);
+  }
+
+  .photo-stack__dialog figcaption {
+    display: flex;
+    min-height: 62px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 14px;
+  }
+
+  .photo-stack__dialog figcaption > span {
+    display: grid;
+    gap: 2px;
+  }
+
+  .photo-stack__dialog figcaption small,
+  .photo-stack__dialog figcaption em {
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-style: normal;
+  }
+
+  .photo-stack__dialog figcaption em {
+    font-family: var(--mono);
+  }
+
+  .photo-stack__close {
+    position: absolute;
+    top: -38px;
+    right: 0;
+    min-height: 30px;
+    padding: 4px 9px;
+    border: 1px solid rgb(255 255 255 / 0.22);
+    border-radius: var(--radius);
+    background: rgb(17 19 17 / 0.72);
+    color: #f0f3ee;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+  }
+
+  .photo-stack__close:hover {
+    border-color: color-mix(in srgb, var(--accent), white 18%);
+    background: color-mix(in srgb, var(--accent), #111311 66%);
+  }
+
+  @keyframes photo-throw-right {
+    45% {
+      opacity: 1;
+      transform: translate3d(64%, 0, 0) rotate(12deg);
+    }
+    100% {
+      opacity: 0;
+      transform: translate3d(22%, 16px, 0) rotate(5deg) scale(0.95);
+    }
+  }
+
+  @keyframes photo-throw-left {
+    45% {
+      opacity: 1;
+      transform: translate3d(-64%, 0, 0) rotate(-12deg);
+    }
+    100% {
+      opacity: 0;
+      transform: translate3d(-22%, 16px, 0) rotate(-5deg) scale(0.95);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .photo-stack {
+      width: 100%;
+      justify-self: stretch;
+    }
+
+    .photo-stack__stage {
+      height: 252px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .photo-stack__stage[data-mode='fan'] .photo-stack__card {
+      transform: translate3d(var(--fan-x-mobile), var(--fan-y), 0) rotate(var(--fan-r)) scale(0.7);
+    }
+
+    .photo-stack__stage[data-mode='fan'] .photo-stack__card:hover,
+    .photo-stack__stage[data-mode='fan'] .photo-stack__card:focus-visible {
+      transform: translate3d(var(--fan-x-mobile), calc(var(--fan-y) - 8px), 0) rotate(var(--fan-r)) scale(0.73);
+    }
+
+    .photo-stack__stage[data-mode='fan'] .photo-stack__card.is-dragging {
+      transform:
+        translate3d(calc(var(--fan-x-mobile) + var(--drag-x)), calc(var(--fan-y) + var(--drag-y)), 0)
+        rotate(calc(var(--fan-r) + var(--drag-r)))
+        scale(0.73);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .photo-stack *,
+    .photo-stack *::before,
+    .photo-stack *::after {
+      animation-duration: 1ms !important;
+      transition-duration: 1ms !important;
+    }
+  }
+</style>

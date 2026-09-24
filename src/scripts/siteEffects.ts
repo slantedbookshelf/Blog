@@ -57,54 +57,217 @@ function normalizePath(path: string) {
   return withoutBase;
 }
 
-function initBackgroundMotionPreference() {
-  const warpedGrid = document.querySelector<SVGSVGElement>('[data-warped-grid-svg]');
-  if (!warpedGrid) return;
+type GridPoint = { x: number; y: number };
+type GridRipple = { x: number; y: number; startedAt: number };
 
-  const syncMotionPreference = () => {
-    if (reducedMotion.matches) {
-      warpedGrid.pauseAnimations();
-    } else {
-      warpedGrid.unpauseAnimations();
-    }
+function initKineticGrid() {
+  const host = document.querySelector<HTMLElement>('[data-kinetic-grid]');
+  const canvas = host?.querySelector<HTMLCanvasElement>('[data-kinetic-grid-canvas]');
+  const context = canvas?.getContext('2d');
+  if (!host || !canvas || !context) return;
+
+  const gridHost = host;
+  const gridCanvas = canvas;
+  const gridContext = context;
+  const articleScale = gridHost.dataset.article === 'true' ? 0.58 : 1;
+  const interactive = !reducedMotion.matches && !coarsePointer.matches;
+  const pointer = {
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+    targetX: window.innerWidth / 2,
+    targetY: window.innerHeight / 2,
+    influence: 0,
+    targetInfluence: 0
   };
+  const ripples: GridRipple[] = [];
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  let spacing = 46;
+  let frame = 0;
+  let colors = readGridColors();
 
-  syncMotionPreference();
-  reducedMotion.addEventListener('change', syncMotionPreference);
-}
+  function readGridColors() {
+    const styles = getComputedStyle(root);
+    return {
+      line: styles.getPropertyValue('--kinetic-grid-line').trim(),
+      accent: styles.getPropertyValue('--kinetic-grid-accent').trim(),
+      dot: styles.getPropertyValue('--kinetic-grid-dot').trim()
+    };
+  }
 
-function initPointerEffects() {
-  const glow = document.querySelector<HTMLElement>('.pointer-glow');
-  const halo = document.querySelector<HTMLElement>('.cursor-halo');
-  if (!glow || !halo || reducedMotion.matches || coarsePointer.matches) return;
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    spacing = width < 700 ? 42 : 46;
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.75);
+    gridCanvas.width = Math.round(width * pixelRatio);
+    gridCanvas.height = Math.round(height * pixelRatio);
+    gridContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    render(performance.now());
+  }
 
-  let mouseX = window.innerWidth / 2;
-  let mouseY = window.innerHeight / 2;
-  let haloX = mouseX;
-  let haloY = mouseY;
-  let raf = 0;
+  function transformPoint(x: number, y: number, now: number): GridPoint {
+    let nextX = x;
+    let nextY = y;
 
-  const draw = () => {
-    root.style.setProperty('--mouse-x', `${mouseX}px`);
-    root.style.setProperty('--mouse-y', `${mouseY}px`);
-    haloX += (mouseX - haloX) * 0.24;
-    haloY += (mouseY - haloY) * 0.24;
-    halo.style.transform = `translate3d(${haloX}px, ${haloY}px, 0)`;
+    if (pointer.influence > 0.002) {
+      const dx = pointer.x - x;
+      const dy = pointer.y - y;
+      const distance = Math.hypot(dx, dy) || 1;
+      const radius = Math.min(230, Math.max(155, width * 0.15));
+      if (distance < radius) {
+        const falloff = 1 - distance / radius;
+        const pull = falloff * falloff * 38 * pointer.influence * articleScale;
+        nextX += (dx / distance) * pull;
+        nextY += (dy / distance) * pull;
+      }
+    }
 
-    if (Math.abs(mouseX - haloX) > 0.4 || Math.abs(mouseY - haloY) > 0.4) {
-      raf = window.requestAnimationFrame(draw);
+    for (const ripple of ripples) {
+      const age = (now - ripple.startedAt) / 1000;
+      const life = 1 - age / 1.35;
+      if (life <= 0) continue;
+
+      const dx = x - ripple.x;
+      const dy = y - ripple.y;
+      const distance = Math.hypot(dx, dy) || 1;
+      const ringRadius = age * 360;
+      const ringDistance = distance - ringRadius;
+      const envelope = Math.exp(-(ringDistance * ringDistance) / 1800);
+      const wave = Math.sin(ringDistance * 0.09) * envelope * life * 20 * articleScale;
+      nextX += (dx / distance) * wave;
+      nextY += (dy / distance) * wave;
+    }
+
+    return { x: nextX, y: nextY };
+  }
+
+  function traceGrid(now: number) {
+    const startX = -spacing * 2;
+    const startY = -spacing * 2;
+    const endX = width + spacing * 2;
+    const endY = height + spacing * 2;
+
+    gridContext.beginPath();
+    for (let y = startY; y <= endY; y += spacing) {
+      for (let x = startX; x <= endX; x += spacing / 2) {
+        const point = transformPoint(x, y, now);
+        if (x === startX) gridContext.moveTo(point.x, point.y);
+        else gridContext.lineTo(point.x, point.y);
+      }
+    }
+    for (let x = startX; x <= endX; x += spacing) {
+      for (let y = startY; y <= endY; y += spacing / 2) {
+        const point = transformPoint(x, y, now);
+        if (y === startY) gridContext.moveTo(point.x, point.y);
+        else gridContext.lineTo(point.x, point.y);
+      }
+    }
+  }
+
+  function render(now: number) {
+    gridContext.clearRect(0, 0, width, height);
+    gridContext.lineWidth = 0.82;
+    gridContext.strokeStyle = colors.line;
+    traceGrid(now);
+    gridContext.stroke();
+
+    if (pointer.influence > 0.01) {
+      gridContext.save();
+      gridContext.beginPath();
+      gridContext.arc(pointer.x, pointer.y, 190, 0, Math.PI * 2);
+      gridContext.clip();
+      gridContext.lineWidth = 1.05;
+      gridContext.globalAlpha = 0.72 * pointer.influence * articleScale;
+      gridContext.strokeStyle = colors.accent;
+      traceGrid(now);
+      gridContext.stroke();
+
+      gridContext.fillStyle = colors.dot;
+      for (let y = -spacing; y <= height + spacing; y += spacing) {
+        for (let x = -spacing; x <= width + spacing; x += spacing) {
+          if (Math.hypot(pointer.x - x, pointer.y - y) > 150) continue;
+          const point = transformPoint(x, y, now);
+          gridContext.beginPath();
+          gridContext.arc(point.x, point.y, 1.25, 0, Math.PI * 2);
+          gridContext.fill();
+        }
+      }
+      gridContext.restore();
+    }
+  }
+
+  function drawFrame(now: number) {
+    frame = 0;
+    pointer.x += (pointer.targetX - pointer.x) * 0.16;
+    pointer.y += (pointer.targetY - pointer.y) * 0.16;
+    pointer.influence += (pointer.targetInfluence - pointer.influence) * 0.13;
+
+    for (let index = ripples.length - 1; index >= 0; index -= 1) {
+      if (now - ripples[index].startedAt > 1350) ripples.splice(index, 1);
+    }
+
+    render(now);
+    const pointerMoving = Math.hypot(pointer.targetX - pointer.x, pointer.targetY - pointer.y) > 0.15;
+    const influenceMoving = Math.abs(pointer.targetInfluence - pointer.influence) > 0.004;
+    if (pointerMoving || influenceMoving || ripples.length > 0) requestRender();
+  }
+
+  function requestRender() {
+    if (!frame && !document.hidden) frame = window.requestAnimationFrame(drawFrame);
+  }
+
+  function handlePointerMove(event: PointerEvent) {
+    pointer.targetX = event.clientX;
+    pointer.targetY = event.clientY;
+    pointer.targetInfluence = 1;
+    requestRender();
+  }
+
+  function handlePointerDown(event: PointerEvent) {
+    ripples.push({ x: event.clientX, y: event.clientY, startedAt: performance.now() });
+    if (ripples.length > 3) ripples.shift();
+    requestRender();
+  }
+
+  function handlePointerLeave(event: PointerEvent) {
+    if (event.relatedTarget) return;
+    pointer.targetInfluence = 0;
+    requestRender();
+  }
+
+  function handleVisibilityChange() {
+    if (document.hidden && frame) {
+      window.cancelAnimationFrame(frame);
+      frame = 0;
     } else {
-      raf = 0;
+      requestRender();
     }
-  };
+  }
 
-  window.addEventListener('pointermove', (event) => {
-    mouseX = event.clientX;
-    mouseY = event.clientY;
-    if (!raf) {
-      raf = window.requestAnimationFrame(draw);
-    }
+  let resizeFrame = 0;
+  window.addEventListener('resize', () => {
+    if (resizeFrame) window.cancelAnimationFrame(resizeFrame);
+    resizeFrame = window.requestAnimationFrame(resize);
   }, { passive: true });
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  if (interactive) {
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerdown', handlePointerDown, { passive: true });
+    window.addEventListener('pointerout', handlePointerLeave, { passive: true });
+    window.addEventListener('blur', () => {
+      pointer.targetInfluence = 0;
+      requestRender();
+    });
+  }
+
+  const themeObserver = new MutationObserver(() => {
+    colors = readGridColors();
+    requestRender();
+  });
+  themeObserver.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  resize();
 }
 
 function initInteractiveSurfaces() {
@@ -276,8 +439,7 @@ function initProblemIndexScroll() {
 
 initHeaderState();
 initActiveNav();
-initBackgroundMotionPreference();
-initPointerEffects();
+initKineticGrid();
 initInteractiveSurfaces();
 initRevealAndStagger();
 initCodeBlocks();

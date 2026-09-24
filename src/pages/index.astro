@@ -2,6 +2,8 @@
 import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import CascadeText from '../components/CascadeText.astro';
+import KineticPhotoStack from '../components/KineticPhotoStack.astro';
 import PostCard from '../components/PostCard.astro';
 import { vibeWorks } from '../data/profile';
 import { SITE, daysSince, estimateReadingTime, formatDate, getPostSlug, withBase } from '../lib/site';
@@ -34,12 +36,13 @@ const runningDays = daysSince(SITE.startDate);
 ---
 
 <BaseLayout title="首页" wide>
-  <section class="home-top">
-    <div>
+  <section class="home-top"> 
+    <div class="home-top__copy">
       <p class="section-label">welcome to</p>
-      <h1>{SITE.title}</h1>
+      <h1 class="home-title"><CascadeText text={SITE.title} /></h1>
       <p>{SITE.description}</p>
     </div>
+    <KineticPhotoStack />
     <dl class="metric-grid" aria-label="站点数据">
       <div>
         <dt>博客数</dt>

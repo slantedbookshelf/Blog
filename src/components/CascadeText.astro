@@ -1,0 +1,82 @@
+---
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+const characters = Array.from(text);
+---
+
+<span class="cascade-text">
+  <span class="sr-only">{text}</span>
+  <span class="cascade-text__line" aria-hidden="true">
+    {characters.map((character, index) => (
+      <span
+        class="cascade-text__character"
+        style={`--enter-delay: ${index * 32}ms; --exit-delay: ${(characters.length - index) * 18}ms`}
+      >
+        <span class="cascade-text__track">
+          <span>{character === ' ' ? '\u00a0' : character}</span>
+          <span>{character === ' ' ? '\u00a0' : character}</span>
+        </span>
+      </span>
+    ))}
+  </span>
+</span>
+
+<style>
+  .cascade-text,
+  .cascade-text__line {
+    display: inline-flex;
+  }
+
+  .cascade-text {
+    max-width: 100%;
+    color: inherit;
+  }
+
+  .cascade-text__line {
+    overflow: hidden;
+    padding-block: 0.04em 0.08em;
+  }
+
+  .cascade-text__character {
+    display: inline-block;
+    height: 1em;
+    overflow: hidden;
+    line-height: 1;
+  }
+
+  .cascade-text__character:not(:last-child) {
+    margin-inline-end: -0.035em;
+  }
+
+  .cascade-text__track {
+    display: flex;
+    flex-direction: column;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .cascade-text__track > span {
+    display: block;
+    height: 1em;
+    line-height: 1;
+  }
+
+  .cascade-text__track > span:last-child {
+    color: color-mix(in srgb, var(--accent), var(--text) 22%);
+  }
+
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .cascade-text__track {
+      transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+      transition-delay: var(--exit-delay);
+      will-change: transform;
+    }
+
+    .cascade-text:hover .cascade-text__track {
+      transform: translate3d(0, -1em, 0);
+      transition-delay: var(--enter-delay);
+    }
+  }
+</style>
