@@ -4,7 +4,7 @@ export const SITE = {
   description: '倾斜书架，记录一下！',
   github: 'https://github.com/slantedbookshelf',
   email: 'mailto:13137112415@163.com',
-  photographyUrl: '',
+  photographyUrl: 'https://slantedbookshelf.github.io/MemoPhotos',
   photographyCover: '',
   neteaseMusicUrl: '',
   location: '北京交通大学',

@@ -1,0 +1,216 @@
+---
+import { Image } from 'astro:assets';
+import avatar from '../assets/photo-stack/photo-1.webp';
+
+interface Props {
+  name: string;
+  location: string;
+  bio: string;
+  github: string;
+  email: string;
+}
+
+const { name, location, bio, github, email } = Astro.props;
+---
+
+<section
+  class="profile-card"
+  aria-labelledby="profile-card-title"
+  tabindex="0"
+>
+  <div class="profile-card__base">
+    <div class="profile-card__content">
+      <div class="profile-card__avatar profile-card__avatar--placeholder">
+        <Image src={avatar} alt="" width={116} height={116} loading="eager" />
+      </div>
+      <p class="profile-card__location">{location}</p>
+      <h2>{name}</h2>
+      <p class="profile-card__bio">{bio}</p>
+      <nav class="profile-card__links" aria-label="个人联系方式">
+        <a href={github} target="_blank" rel="noreferrer">GitHub</a>
+        <a href={email}>Email</a>
+      </nav>
+    </div>
+  </div>
+  <div class="profile-card__accent" aria-hidden="true">
+    <div class="profile-card__content profile-card__content--accented">
+      <div class="profile-card__avatar">
+        <Image src={avatar} alt="" width={116} height={116} loading="eager" />
+      </div>
+      <p class="profile-card__location">{location}</p>
+      <h2>{name}</h2>
+      <p class="profile-card__bio">{bio}</p>
+      <div class="profile-card__links" aria-hidden="true">
+        <span>GitHub</span>
+        <span>Email</span>
+      </div>
+    </div>
+  </div>
+  <span class="sr-only" id="profile-card-title">关于 {name}</span>
+</section>
+
+<style>
+  .profile-card {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    min-height: 286px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--accent), var(--border) 56%);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 14px 34px color-mix(in srgb, var(--text), transparent 92%);
+    cursor: default;
+  }
+
+  .profile-card:focus {
+    outline: none;
+  }
+
+  .profile-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .profile-card__base,
+  .profile-card__accent {
+    width: 100%;
+  }
+
+  .profile-card__accent {
+    position: absolute;
+    inset: 0;
+    clip-path: circle(34px at 46px 46px);
+    background: #0f6b42;
+    pointer-events: none;
+    transition: clip-path 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .profile-card:hover .profile-card__accent,
+  .profile-card:focus .profile-card__accent,
+  .profile-card:focus-within .profile-card__accent {
+    clip-path: circle(155% at 46px 46px);
+    transition-duration: 620ms;
+  }
+
+  .profile-card__content {
+    display: flex;
+    min-height: 286px;
+    flex-direction: column;
+    padding: 16px;
+    color: var(--text);
+  }
+
+  .profile-card__content--accented {
+    color: #f4f8f5;
+  }
+
+  .profile-card__avatar {
+    width: 58px;
+    height: 58px;
+    flex: 0 0 auto;
+    padding: 3px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--accent), white 36%);
+    border-radius: 50%;
+    background: var(--surface);
+  }
+
+  .profile-card__avatar--placeholder {
+    visibility: hidden;
+  }
+
+  .profile-card__avatar :global(img) {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .profile-card__location {
+    margin: 17px 0 3px;
+    color: var(--faint);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    line-height: 1.4;
+  }
+
+  .profile-card__content--accented .profile-card__location {
+    color: rgb(244 248 245 / 0.72);
+  }
+
+  .profile-card h2 {
+    margin: 0;
+    font-size: clamp(1.35rem, 3vw, 1.65rem);
+    font-weight: 820;
+    letter-spacing: -0.035em;
+    line-height: 1.12;
+  }
+
+  .profile-card__bio {
+    flex: 1;
+    margin: 13px 0 18px;
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.62;
+  }
+
+  .profile-card__content--accented .profile-card__bio {
+    color: rgb(244 248 245 / 0.86);
+  }
+
+  .profile-card__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .profile-card__links a,
+  .profile-card__links span {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    padding: 4px 8px;
+    border: 1px solid color-mix(in srgb, var(--accent), var(--border) 48%);
+    border-radius: var(--radius);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+  }
+
+  .profile-card__content--accented .profile-card__links span {
+    border-color: rgb(244 248 245 / 0.4);
+    color: #f4f8f5;
+  }
+
+  .profile-card__links a:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    text-decoration: none;
+  }
+
+  .profile-card__links a:active {
+    transform: translateY(1px);
+  }
+
+  @media (max-width: 900px) {
+    .profile-card {
+      max-width: 420px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .profile-card {
+      max-width: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .profile-card__accent,
+    .profile-card__links a {
+      transition-duration: 1ms;
+    }
+  }
+</style>
