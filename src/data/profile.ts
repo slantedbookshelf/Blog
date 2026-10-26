@@ -25,6 +25,14 @@ export const vibeWorks: BlogProject[] = [
     href: 'https://github.com/jiasuxie92-jpg/sleep_simulator',
     stack: ['治愈放松', '小游戏'],
     status: '已发布'
+  },
+  {
+    name: 'Easy_copy',
+    title: '随记板',
+    description: '一款 Windows 桌面悬浮文本暂存工具，完全本地运行。',
+    href: 'https://github.com/slantedbookshelf/Easy_copy',
+    stack: ['软件', '实用工具'],
+    status: '已发布'
   }
 ];
 
