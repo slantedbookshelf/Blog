@@ -33,6 +33,14 @@ export const vibeWorks: BlogProject[] = [
     href: 'https://github.com/slantedbookshelf/Easy_copy',
     stack: ['软件', '实用工具'],
     status: '已发布'
+  },
+{
+    name: 'Raining_music',
+    title: '雨声音乐',
+    description: '全栈音乐软件，基于 Vue3 + Vite + MySQL + SpringBoot，提供音乐搜索和播放功能。',
+    href: 'https://github.com/slantedbookshelf/Raining-Music',
+    stack: ['音乐', '全栈','vue'],
+    status: '已发布'
   }
 ];
 
