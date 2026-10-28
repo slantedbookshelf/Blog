@@ -41,6 +41,14 @@ export const vibeWorks: BlogProject[] = [
     href: 'https://github.com/slantedbookshelf/Raining-Music',
     stack: ['音乐', '全栈','vue'],
     status: '已发布'
+  },
+  {
+    name: 'Cozy_Pet_Puzzle',
+    title: '萌宠投喂屋',
+    description: '仿照2048做的h5小游戏',
+    href: 'https://github.com/slantedbookshelf/Cozy-Pet-Puzzle',
+    stack: ['小游戏', '治愈','2048'],
+    status: '已发布'
   }
 ];
 
