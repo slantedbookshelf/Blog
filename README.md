@@ -315,3 +315,14 @@ https://jiasuxie92-jpg.github.io
 - 更完整的 About 页面资料和 AI profile。
 
 第一版暂不包含登录、数据库、向量数据库、Embedding、复杂 RAG、语音聊天、图片生成、多 Agent 或管理后台。
+
+### 文章归档分类
+
+文章 frontmatter 的 `categories` 可填写一个或多个固定分类：`Java 后端`、`前端开发`、`人工智能`、`开发工具`、`算法与数据`、`学习笔记`。例如：
+
+```yaml
+category: "Backend" # 保留原有分类，供旧分类页面和链接使用
+categories: ["Java 后端", "开发工具"]
+```
+
+未设置 `categories` 的历史文章会根据原 `category` 自动归入对应归档分类；原分类和标签数据不会被更改。新文章仍需填写 `category` 以兼容现有页面。

@@ -1,44 +1,42 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostCard from '../../components/PostCard.astro';
-import { withBase } from '../../lib/site';
-
-const posts = (await getCollection('posts', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
-const tags = [...new Set(posts.flatMap((post) => post.data.tags))].sort();
-const categories = [...new Set(posts.map((post) => post.data.category))].sort();
+import { formatDate, getPostSlug, withBase } from '../../lib/site';
+import { ARCHIVE_CATEGORIES, archiveCategories } from '../../lib/archiveCategories';
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 ---
-
-<BaseLayout title="文章">
-  <section class="page-title">
-    <p class="eyebrow">文章归档</p>
-    <h1>文章</h1>
-    <p>所有文章按发布时间排序，你也可以通过分类或标签缩小范围。</p>
-  </section>
-
-  <section class="filter-block" aria-label="文章筛选">
-    <div>
-      <h2>分类</h2>
-      <div class="tag-row">
-        {categories.map((category) => (
-          <a class="tag" href={withBase(`/categories/${encodeURIComponent(category)}/`)}>
-            {category}
-          </a>
-        ))}
-      </div>
+<BaseLayout title="文章" wide>
+  <div class="archive">
+    <header class="archive__header">
+      <p class="eyebrow">文章归档 / ARCHIVE</p>
+      <h1>文章</h1>
+      <p>记录学习、实践与思考。按主题浏览，或从最新文章开始。</p>
+    </header>
+    <nav class="archive__filters" aria-label="文章分类">
+      <button type="button" class="archive__pill is-active" data-filter="all" aria-pressed="true">全部文章 <span>{posts.length}</span></button>
+      {ARCHIVE_CATEGORIES.map((category) => <button type="button" class="archive__pill" data-filter={category} aria-pressed="false">{category}</button>)}
+    </nav>
+    <div class="archive__list" aria-live="polite">
+      {posts.map((post) => <article class="archive__item" data-categories={JSON.stringify(archiveCategories(post.data))}>
+        <div class="archive__copy">
+          <div class="archive__meta"><time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time><span aria-hidden="true"> / </span><span>{archiveCategories(post.data).join(' · ')}</span></div>
+          <h2><a href={withBase(`/posts/${getPostSlug(post.id)}/`)}>{post.data.title}</a></h2>
+          <p>{post.data.description}</p>
+        </div><span class="archive__arrow" aria-hidden="true">↗</span>
+      </article>)}
+      <p class="archive__empty" hidden>这个分类暂时没有文章。</p>
     </div>
-    <div>
-      <h2>标签</h2>
-      <div class="tag-row">
-        {tags.map((tag) => (
-          <a class="tag" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <div class="post-list">
-    {posts.map((post) => <PostCard post={post} />)}
   </div>
 </BaseLayout>
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.archive__pill');
+  const items = document.querySelectorAll<HTMLElement>('.archive__item');
+  const empty = document.querySelector<HTMLElement>('.archive__empty');
+  buttons.forEach((button) => button.addEventListener('click', () => {
+    const selected = button.dataset.filter;
+    buttons.forEach((item) => { const active = item === button; item.classList.toggle('is-active', active); item.setAttribute('aria-pressed', String(active)); });
+    let count = 0;
+    items.forEach((item) => { const matches = selected === 'all' || (JSON.parse(item.dataset.categories || '[]') as string[]).includes(selected || ''); item.hidden = !matches; if (matches) count++; });
+    if (empty) empty.hidden = count > 0;
+  }));
+</script>

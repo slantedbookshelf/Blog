@@ -21,17 +21,10 @@ const latestPostCover = latestPostSlug === 'what-is-jev' ? jevCover : undefined;
 const listedPosts = pinnedPosts.length > 0 ? regularPosts : posts;
 const listedPostsHeading = pinnedPosts.length > 0 ? '更多文章' : '全部文章';
 const lastUpdated = posts[0]?.data.updatedDate ?? posts[0]?.data.pubDate;
-const tagCounts = posts.reduce<Record<string, number>>((acc, post) => {
-  post.data.tags.forEach((tag) => {
-    acc[tag] = (acc[tag] ?? 0) + 1;
-  });
-  return acc;
-}, {});
 const categoryCounts = posts.reduce<Record<string, number>>((acc, post) => {
   acc[post.data.category] = (acc[post.data.category] ?? 0) + 1;
   return acc;
 }, {});
-const tags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 const categories = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 const runningDays = daysSince(SITE.startDate);
 ---
@@ -210,21 +203,7 @@ const runningDays = daysSince(SITE.startDate);
           ))}
         </div>
       </section>
-
-      <section class="panel">
-        <div class="panel__header">
-          <h2>热门标签</h2>
-          <a href={withBase('/tags/')}>全部</a>
-        </div>
-        <div class="tag-cloud tag-cloud--compact">
-          {tags.slice(0, 14).map(([tag, count]) => (
-            <a class="tag" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>
-              #{tag}
-              <span>{count}</span>
-            </a>
-          ))}
-        </div>
-      </section>
     </aside>
   </div>
 </BaseLayout>
+

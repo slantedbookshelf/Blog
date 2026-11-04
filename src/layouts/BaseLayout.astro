@@ -23,8 +23,7 @@ const pageTitle = title ? `${title} | ${SITE.title}` : SITE.title;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script is:inline>
       const storedTheme = localStorage.getItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.dataset.theme = storedTheme || (prefersDark ? 'dark' : 'light');
+      document.documentElement.dataset.theme = storedTheme || 'dark';
     </script>
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
@@ -54,3 +53,4 @@ const pageTitle = title ? `${title} | ${SITE.title}` : SITE.title;
     <AiChat />
   </body>
 </html>
+
