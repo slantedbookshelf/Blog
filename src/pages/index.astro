@@ -12,14 +12,10 @@ import jevCover from '../content/posts/what-is-jev-pics/jev-system-one-cover.jpe
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
-const pinnedPosts = posts.filter((post) => post.data.pinned);
-const regularPosts = posts.filter((post) => !post.data.pinned);
-const latestPost = regularPosts[0] ?? posts[0];
+const latestPost = posts[0];
 const latestPostSlug = latestPost ? getPostSlug(latestPost.id) : '';
 const latestPostHref = latestPost ? withBase(`/posts/${latestPostSlug}/`) : '';
 const latestPostCover = latestPostSlug === 'what-is-jev' ? jevCover : undefined;
-const listedPosts = pinnedPosts.length > 0 ? regularPosts : posts;
-const listedPostsHeading = pinnedPosts.length > 0 ? '更多文章' : '全部文章';
 const lastUpdated = posts[0]?.data.updatedDate ?? posts[0]?.data.pubDate;
 const categoryCounts = posts.reduce<Record<string, number>>((acc, post) => {
   acc[post.data.category] = (acc[post.data.category] ?? 0) + 1;
@@ -94,35 +90,6 @@ const runningDays = daysSince(SITE.startDate);
         </section>
       )}
 
-      {pinnedPosts.length > 0 && (
-        <section class="panel pinned-panel" aria-label="置顶文章">
-          <div class="panel__header">
-            <h2>置顶文章</h2>
-            <span>{pinnedPosts.length} 篇</span>
-          </div>
-          <div class="pinned-list">
-            {pinnedPosts.map((post) => (
-              <article class="pinned-item interactive-surface">
-                <div class="pinned-item__body">
-                  <h3>
-                    <a href={withBase(`/posts/${getPostSlug(post.id)}/`)}>{post.data.title}</a>
-                  </h3>
-                  <p>{post.data.description}</p>
-                  <div class="post-card__meta" aria-label="文章元数据">
-                    <time class="post-card__date" datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
-                    <span>{post.data.category}</span>
-                    <span>{estimateReadingTime(post.body ?? post.data.description)} 分钟</span>
-                    {post.data.tags.slice(0, 3).map((tag) => (
-                      <a href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>
-                    ))}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
-
       <section class="panel works-panel" aria-label="vibe coding作品">
         <div class="panel__header">
           <h2>vibe coding作品</h2>
@@ -130,8 +97,13 @@ const runningDays = daysSince(SITE.startDate);
         </div>
         <div class="works-list">
           {vibeWorks.map((work) => (
-            <article class="work-item">
-              <div>
+            <article class:list={['work-item', { 'work-item--preview': work.preview }]}>
+              {work.preview && (
+                <img class="work-item__preview" src={withBase(work.preview.src)} alt={work.preview.alt}
+                  style={{ objectPosition: work.preview.position ?? 'center' }}
+                  width="960" height="640" loading="lazy" decoding="async" />
+              )}
+              <div class="work-item__body">
                 <p class="work-item__name">{work.name}</p>
                 <h3>
                   <a href={work.href} target="_blank" rel="noreferrer">{work.title}</a>
@@ -151,11 +123,11 @@ const runningDays = daysSince(SITE.startDate);
 
       <section class="panel articles-panel" aria-label="文章列表">
         <div class="panel__header">
-          <h2>{listedPostsHeading}</h2>
+          <h2>全部文章</h2>
           <a href={withBase('/blog/')}>归档</a>
         </div>
         <div class="post-list post-list--dense">
-          {listedPosts.map((post) => <PostCard post={post} />)}
+          {posts.map((post) => <PostCard post={post} />)}
         </div>
       </section>
     </main>
@@ -168,26 +140,6 @@ const runningDays = daysSince(SITE.startDate);
         github={SITE.github}
         email={SITE.email}
       />
-
-      <section class="panel">
-        <div class="panel__header">
-          <h2>状态</h2>
-        </div>
-        <dl class="status-list">
-          <div>
-            <dt>构建</dt>
-            <dd>Static Astro</dd>
-          </div>
-          <div>
-            <dt>托管</dt>
-            <dd>GitHub Pages</dd>
-          </div>
-          <div>
-            <dt>更新频率</dt>
-            <dd>按项目推进</dd>
-          </div>
-        </dl>
-      </section>
 
       <section class="panel">
         <div class="panel__header">
@@ -206,4 +158,54 @@ const runningDays = daysSince(SITE.startDate);
     </aside>
   </div>
 </BaseLayout>
+
+<style>
+  /* Image, fading surface, then copy: keep text opaque in both themes. */
+  .work-item--preview {
+    isolation: isolate;
+    min-height: 230px;
+  }
+
+  .work-item--preview:first-child { min-height: 200px; }
+
+  .work-item__preview {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 62%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+  }
+
+  .work-item--preview::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(90deg,
+      var(--surface) 0%, var(--surface) 38%,
+      color-mix(in srgb, var(--surface) 97%, transparent) 49%,
+      color-mix(in srgb, var(--surface) 75%, transparent) 61%,
+      color-mix(in srgb, var(--surface) 20%, transparent) 78%,
+      transparent 100%);
+  }
+
+  .work-item--preview .work-item__body { width: 66%; }
+  .work-item--preview .work-item__name { overflow-wrap: anywhere; }
+  .work-item--preview p:not(.work-item__name) { -webkit-line-clamp: unset; }
+  .work-item--preview .work-item__footer { position: relative; }
+  .work-item--preview .work-item__stack { max-width: 70%; }
+  .work-item--preview .repo-link { background: var(--surface); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .work-item__preview { transition: transform 350ms ease; }
+    .work-item--preview:is(:hover, :focus-within) .work-item__preview { transform: scale(1.035); }
+  }
+
+  @media (max-width: 640px) {
+    .work-item--preview, .work-item--preview:first-child { min-height: 220px; }
+    .work-item--preview .work-item__footer { flex-direction: row; align-items: end; }
+  }
+</style>
 

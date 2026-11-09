@@ -20,6 +20,7 @@ export interface BlogProject {
   href: string;
   stack: string[];
   status?: string;
+  preview?: { src: string; alt: string; position?: string };
 }
 
 export interface BlogProfile {

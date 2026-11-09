@@ -4,6 +4,7 @@ import { SITE } from '../lib/site';
 export const vibeWorks: BlogProject[] = [
   {
     name: 'smart-cockpit-agent',
+    preview: { src: '/images/projects/cockpit.webp', alt: '多模态智能座舱 Agent 项目界面' },
     title: '多模态智能座舱 Agent',
     description: '基于 LangGraph 与 MCP 协议的智能座舱 Agent 系统，探索车载场景里的多模态交互和工具编排。',
     href: 'https://github.com/jiasuxie92-jpg/smart-cockpit-agent',
@@ -11,7 +12,17 @@ export const vibeWorks: BlogProject[] = [
     status: '进行中'
   },
   {
+    name: 'chick-crossing',
+    preview: { src: '/images/projects/chick-crossing.webp', alt: '小鸡过马路项目界面' },
+    title: '小鸡过马路',
+    description: '基于Vue 3 + TypeScript + Vite+Three.js + CSS实现的纯前端游戏。',
+    href: 'https://github.com/jiasuxie92-jpg/chick-crossing',
+    stack: ['Vue', 'TypeScript', 'Vite', 'Three.js', 'CSS'],
+    status: '进行中'
+  },
+  {
     name: 'HBTI_0427',
+    preview: { src: '/images/projects/hbti.webp', alt: 'HBTI 生日人格测试项目预览', position: 'center top' },
     title: 'HBTI 生日人格测试',
     description: '为朋友生日制作的非正式人格测试，把互动问答、结果生成和个人化表达做成轻量 Web 体验。',
     href: 'https://github.com/jiasuxie92-jpg/HBTI_0427',
@@ -20,6 +31,7 @@ export const vibeWorks: BlogProject[] = [
   },
   {
     name: 'sleeping_simulator',
+    preview: { src: '/images/projects/sleep.svg', alt: '睡觉模拟器卧室主题示意图' },
     title: '睡觉模拟器',
     description: '一个偏治愈和放松的小体验，用轻量交互营造睡眠模拟的氛围。',
     href: 'https://github.com/jiasuxie92-jpg/sleep_simulator',
@@ -28,6 +40,7 @@ export const vibeWorks: BlogProject[] = [
   },
   {
     name: 'Easy_copy',
+    preview: { src: '/images/projects/easy-copy.webp', alt: '随记板项目介绍封面' },
     title: '随记板',
     description: '一款 Windows 桌面悬浮文本暂存工具，完全本地运行。',
     href: 'https://github.com/slantedbookshelf/Easy_copy',
@@ -36,6 +49,7 @@ export const vibeWorks: BlogProject[] = [
   },
 {
     name: 'Raining_music',
+    preview: { src: '/images/projects/music.webp', alt: '雨声音乐项目封面' },
     title: '雨声音乐',
     description: '全栈音乐软件，基于 Vue3 + Vite + MySQL + SpringBoot，提供音乐搜索和播放功能。',
     href: 'https://github.com/slantedbookshelf/Raining-Music',
@@ -44,6 +58,7 @@ export const vibeWorks: BlogProject[] = [
   },
   {
     name: 'Cozy_Pet_Puzzle',
+    preview: { src: '/images/projects/cozy-pet.webp', alt: '萌宠投喂屋游戏街区画面' },
     title: '萌宠投喂屋',
     description: '仿照2048做的h5小游戏',
     href: 'https://github.com/slantedbookshelf/Cozy-Pet-Puzzle',

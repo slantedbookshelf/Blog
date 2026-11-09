@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { vibeWorks } from '../data/profile';
+---
+<BaseLayout title="项目" wide>
+  <div class="archive">
+    <header class="archive__header"><p class="eyebrow">项目 / PROJECTS</p><h1>项目</h1><p>记录做过的探索、工具与小作品。</p></header>
+    <div class="archive__list">
+      {vibeWorks.map((project) => <article class="archive__item">
+        <div class="archive__copy"><div class="archive__meta">{project.status} / {project.stack.join(' · ')}</div><h2><a href={project.href} target="_blank" rel="noopener noreferrer">{project.title}</a></h2><p>{project.description}</p></div><span class="archive__arrow" aria-hidden="true">↗</span>
+      </article>)}
+    </div>
+  </div>
+</BaseLayout>

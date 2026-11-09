@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#27374b"/><stop offset="1" stop-color="#576474"/></linearGradient>
+    <linearGradient id="blanket" x2="1" y2="1"><stop stop-color="#b4c9c2"/><stop offset="1" stop-color="#789b91"/></linearGradient>
+  </defs>
+  <path fill="url(#wall)" d="M0 0h640v480H0z"/>
+  <path fill="#77716c" d="M0 354h640v126H0z"/>
+  <rect x="370" y="42" width="196" height="208" rx="7" fill="#9cafa8"/>
+  <rect x="380" y="52" width="176" height="188" rx="3" fill="#1c2c43"/>
+  <path d="M505 74a35 35 0 1 0 26 53 31 31 0 0 1-26-53" fill="#f3e4b9"/>
+  <g fill="#dce3df"><circle cx="404" cy="85" r="2"/><circle cx="447" cy="143" r="2"/><circle cx="529" cy="195" r="2"/><circle cx="416" cy="211" r="1.5"/></g>
+  <path d="M468 49v193m-90-85h180" stroke="#9cafa8" stroke-width="7"/>
+  <rect x="167" y="254" width="337" height="110" rx="18" fill="#8d8078"/>
+  <path d="M168 331h336l45 83H129z" fill="#e7ded0"/>
+  <rect x="190" y="291" width="122" height="57" rx="20" fill="#f1eadf"/>
+  <rect x="339" y="291" width="122" height="57" rx="20" fill="#e2ddd4"/>
+  <path d="M159 348h357l33 66H129z" fill="url(#blanket)"/>
+  <path d="M129 414h420v24H129z" fill="#63877e"/>
+  <path d="M145 438v19m387-19v19" stroke="#493e39" stroke-width="12"/>
+  <rect x="54" y="340" width="76" height="60" rx="5" fill="#b2a18b"/>
+  <path d="M92 339v-53" stroke="#c6b395" stroke-width="7"/>
+  <path d="M64 256h56l15 43H49z" fill="#eed8ad"/>
+  <ellipse cx="92" cy="338" rx="19" ry="5" fill="#d3bb93"/>
+  <text x="572" y="455" text-anchor="end" fill="#e0d9cf" font-family="sans-serif" font-size="13" letter-spacing="3">GOOD NIGHT</text>
+</svg>

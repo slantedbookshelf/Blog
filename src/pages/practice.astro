@@ -1,0 +1,15 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPostSlug, withBase } from '../lib/site';
+const ids = ['hot_100', 'sql_50'];
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).filter((post) => ids.includes(getPostSlug(post.id))).sort((a, b) => ids.indexOf(getPostSlug(a.id)) - ids.indexOf(getPostSlug(b.id)));
+---
+<BaseLayout title="刷题" wide>
+  <div class="archive">
+    <header class="archive__header"><p class="eyebrow">刷题 / PRACTICE</p><h1>刷题</h1><p>整理算法与 SQL 题目的解题思路。</p></header>
+    <div class="archive__list">
+      {posts.map((post) => <article class="archive__item"><div class="archive__copy"><div class="archive__meta">{post.data.tags.join(' · ')}</div><h2><a href={withBase(`/posts/${getPostSlug(post.id)}/`)}>{post.data.title}</a></h2><p>{post.data.description}</p></div><span class="archive__arrow" aria-hidden="true">↗</span></article>)}
+    </div>
+  </div>
+</BaseLayout>
