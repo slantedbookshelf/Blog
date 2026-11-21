@@ -1,0 +1,27 @@
+---
+import { Code } from 'astro:components';
+import type { Exercise, Language, TestCase } from '../../data/js-ts/types';
+
+interface Props { exercise: Exercise; sample: TestCase; language: Language; topic: string }
+const { exercise, sample, language, topic } = Astro.props;
+const input = sample.args.map(arg => language === 'go' ? String(arg) : JSON.stringify(arg)).join(', ');
+---
+
+<section class="lesson-exercise" data-mode-panel="exercise" id="exercise" aria-labelledby="exercise-title" hidden>
+  <p class="lesson-meta">{exercise.difficulty} · {topic}</p>
+  <h2 id="exercise-title">{exercise.title}</h2>
+  <p>{exercise.task}</p>
+  <h3>限制条件</h3>
+  <p>{exercise.constraints}</p>
+  <h3>输入输出示例</h3>
+  <pre class="lesson-test-example"><code>{'solve(' + input + ')\n→ ' + JSON.stringify(sample.expected)}</code></pre>
+  <details class="lesson-disclosure">
+    <summary>解题提示</summary>
+    <p>{exercise.hint}</p>
+  </details>
+  <details class="lesson-disclosure">
+    <summary>参考答案与解析</summary>
+    <p>{exercise.explanation}</p>
+    <Code code={exercise.solution} lang={language} theme="github-dark" wrap />
+  </details>
+</section>

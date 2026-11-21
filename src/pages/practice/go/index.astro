@@ -1,0 +1,9 @@
+---
+import CourseHome from '../../../components/js-ts/CourseHome.astro';
+import { chapters } from '../../../data/go/chapters';
+---
+
+<CourseHome id="go" title="Go 语言学习"
+  description="面向其他语言开发者的 Go 交互式教程与练习。"
+  introduction="从 Java、Python 或 JavaScript 迁移到 Go。练习切片、接口和显式错误处理，再用 goroutine、JSON 与分层的数据处理完成一次后端实战。"
+  {chapters} />

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173c3c">
+  <title>鹈鹕的海边骑行</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: clamp(10px, 4vw, 56px);
+      background: #173c3c;
+      font-family: system-ui, sans-serif;
+    }
+    main {
+      position: relative;
+      width: min(100%, 1040px);
+      overflow: hidden;
+      border: 1px solid #fff0ce55;
+      border-radius: clamp(14px, 3vw, 28px);
+      background: #f4d39d;
+      box-shadow: 0 24px 64px #071f2266;
+    }
+    svg { display: block; width: 100%; height: auto; }
+    button {
+      position: absolute;
+      right: clamp(9px, 2vw, 22px);
+      bottom: clamp(9px, 2vw, 22px);
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 1px solid #fff5d994;
+      border-radius: 50%;
+      background: #173c3c;
+      color: #fff5dd;
+      cursor: pointer;
+    }
+    button[hidden] { display: none; }
+    button:hover { background: #285654; }
+    button:focus-visible { outline: 2px solid #fff5dd; outline-offset: 3px; }
+    button svg { width: 18px; height: 18px; }
+    button .play, button.is-paused .pause { display: none; }
+    button.is-paused .play { display: initial; }
+  </style>
+</head>
+<body>
+  <main>
+    <svg id="ride" viewBox="0 0 960 580" role="img" aria-labelledby="scene-title scene-description"
+      xmlns="http://www.w3.org/2000/svg">
+      <title id="scene-title">鹈鹕的海边骑行</title>
+      <desc id="scene-description">一只系着红围巾的白鹈鹕，骑着青绿色自行车沿海岸前行。两只脚轮流踩踏，身后的海浪和路面向左移动。</desc>
+      <defs>
+        <linearGradient id="sky" x2="0" y2="1" gradientUnits="objectBoundingBox">
+          <stop stop-color="#f7dfb2"/>
+          <stop offset="1" stop-color="#ffefcf"/>
+        </linearGradient>
+        <linearGradient id="sea" x2="0" y2="1" gradientUnits="objectBoundingBox">
+          <stop stop-color="#8fb8a8"/>
+          <stop offset="1" stop-color="#d4d5ad"/>
+        </linearGradient>
+        <linearGradient id="plumage" x2=".28" y2="1" gradientUnits="objectBoundingBox">
+          <stop stop-color="#fffbed"/>
+          <stop offset="1" stop-color="#eee0c4"/>
+        </linearGradient>
+        <linearGradient id="pouch" x2=".15" y2="1" gradientUnits="objectBoundingBox">
+          <stop stop-color="#f2ac60"/>
+          <stop offset="1" stop-color="#e5815a"/>
+        </linearGradient>
+        <pattern id="paper" width="23" height="19" patternUnits="userSpaceOnUse">
+          <path d="M2 4h.2m5 9h.2m6-9h.2m3 12h.2m4-8h.2m-19 8h.2"
+            stroke="#563e37" stroke-width=".7" stroke-linecap="round" opacity=".18"/>
+        </pattern>
+        <g id="clouds" fill="#fff6db" opacity=".78">
+          <path d="M22 106c4-6 13-9 23-8 5-10 15-16 28-16 15 0 26 7 29 16 16-1 28 1 34 8z"/>
+          <path d="M280 154c3-6 9-9 18-9 4-10 13-15 24-15 9 0 17 5 21 12 12-1 22 4 25 12z"/>
+          <path d="M396 65c6-6 13-8 22-7 4-5 10-8 16-8 9 0 16 3 19 9 11 0 20 2 24 6z"/>
+        </g>
+        <g id="waves" fill="none" stroke="#f8edce" stroke-linecap="round">
+          <path d="M12 362h47m21 0h21m79 21h69m31-30h46m30 0h13m22 31h55m-407 29h32m184-5h41m105 13h45"
+            stroke-width="2.5" opacity=".65"/>
+          <path d="M110 344h38m-8 55h12m177-22h24m72-23h23" opacity=".53"/>
+        </g>
+        <g id="road-marks" fill="none" stroke-linecap="round">
+          <path d="M18 526h44m13 0h11m110 24h55m27-51h11" stroke="#f6e0b6" stroke-width="3" opacity=".58"/>
+          <path d="M105 511h22m27 48h11m128-31h10m-277 38h16" stroke="#a98163" stroke-width="2" opacity=".55"/>
+        </g>
+        <g id="grasses" fill="none" stroke-linecap="round">
+          <path d="M24 461q0-18-10-29m12 29q4-12 13-21m-16 19q-9-7-18-8m66 10q-5-13-10-17m10 17q3-12 7-17m77 17q-3-22-14-30m15 30q0-13 10-23m-7 23q7-10 17-10m64 10q-1-10-7-16m6 16q5-11 12-13"
+            stroke="#607b63" stroke-width="2"/>
+          <path d="M44 461l-3-9m56 10q1-8 6-12m98 11l-3-10m18 10q3-7 7-9m58 10q1-7 6-12"
+            stroke="#a0835c" stroke-width="1.7"/>
+        </g>
+        <g id="wheel">
+          <circle r="81" fill="none" stroke="#243c40" stroke-width="11"/>
+          <circle r="74" fill="none" stroke="#f7e5bb" stroke-width="4"/>
+          <circle r="70" fill="none" stroke="#527471" stroke-width="2"/>
+          <path d="M0-69V69M-69 0H69M-49-49l98 98m0-98-98 98M-26.4-63.7l52.8 127.4m-90.1-90.1 127.4 52.8m0-52.8L-63.7 26.4m90.1-90.1L-26.4 63.7"
+            fill="none" stroke="#456665" opacity=".65" stroke-width="1.5"/>
+          <path d="M-43-52l4-3m72 113 4-3" stroke="#fcf1d4" stroke-width="5" stroke-linecap="round"/>
+          <circle r="8" fill="#f5d394" stroke="#243c40" stroke-width="3"/>
+        </g>
+      </defs>
+
+      <rect width="960" height="580" fill="url(#sky)"/>
+      <circle cx="758" cy="152" r="85" fill="#f7c66e" opacity=".36"/>
+      <circle cx="758" cy="152" r="73" fill="#f8c978"/>
+      <path d="M705 179h106m-94 13h82m-60 12h41" fill="none" stroke="#f7d397" stroke-width="2" opacity=".67"/>
+      <g>
+        <animateTransform attributeName="transform" type="translate" from="0 0" to="-480 0" dur="55s" repeatCount="indefinite"/>
+        <use href="#clouds"/><use href="#clouds" x="480"/><use href="#clouds" x="960"/>
+      </g>
+      <g fill="none" stroke="#657c6f" stroke-width="2.3" stroke-linecap="round">
+        <path d="M156 165q8-7 15 0 7-7 15 0m22 15q6-5 11 0 6-5 12 0"/>
+        <path d="M811 250q6-5 11 1 6-6 13-2"/>
+      </g>
+      <path d="M0 319c59 2 96-29 160-28 59 1 92 28 152 27 50-1 76-14 136-11 40 2 63 14 94 16H0z" fill="#94a88d"/>
+      <path d="M574 327c55-21 97-18 144-30 54-14 90-45 150-43 38 2 71 22 92 25v49z" fill="#a6b49a"/>
+      <path d="M741 326c48-5 95-31 142-31 30 0 53 9 77 9v27z" fill="#769785"/>
+      <rect y="325" width="960" height="140" fill="url(#sea)"/>
+      <path d="M0 328h960" stroke="#f9efce" opacity=".61" stroke-width="2"/>
+      <g>
+        <animateTransform attributeName="transform" type="translate" from="0 0" to="-480 0" dur="12s" repeatCount="indefinite"/>
+        <use href="#waves"/><use href="#waves" x="480"/><use href="#waves" x="960"/>
+      </g>
+      <path d="M0 437c106-5 184 2 272 1 119-2 203-11 331-8 108 2 237 8 357 0v48H0z" fill="#e0c798"/>
+      <path d="M0 440c106-5 184 2 272 1 119-2 203-11 331-8 108 2 237 8 357 0" fill="none" stroke="#faeac1" stroke-width="3" opacity=".85"/>
+      <g>
+        <animateTransform attributeName="transform" type="translate" from="0 0" to="-320 0" dur="2.8s" repeatCount="indefinite"/>
+        <use href="#grasses"/><use href="#grasses" x="320"/><use href="#grasses" x="640"/><use href="#grasses" x="960"/>
+      </g>
+      <path d="M0 461h960v119H0z" fill="#cba17b"/>
+      <path d="M0 463h960" stroke="#f4d5a6" stroke-width="4"/>
+      <path d="M0 475h960" stroke="#a77e61" stroke-width="1.5" opacity=".6"/>
+      <path d="M0 577h960" stroke="#b88e6e" stroke-width="7" opacity=".45"/>
+      <g>
+        <animateTransform attributeName="transform" type="translate" from="0 0" to="-320 0" dur="1.02s" repeatCount="indefinite"/>
+        <use href="#road-marks"/><use href="#road-marks" x="320"/><use href="#road-marks" x="640"/><use href="#road-marks" x="960"/>
+      </g>
+      <ellipse cx="484" cy="493" rx="250" ry="13" fill="#664f4a" opacity=".18"/>
+      <ellipse cx="316" cy="494" rx="58" ry="6" fill="#664f4a" opacity=".18"/>
+      <ellipse cx="650" cy="494" rx="60" ry="6" fill="#664f4a" opacity=".18"/>
+
+      <g stroke-linecap="round" stroke-linejoin="round">
+        <path d="M226 301h42m-58 14h27m-6 54h27" stroke="#fcf4d5" stroke-width="3" opacity=".65">
+          <animate attributeName="opacity" values=".25;.85;.25" dur="1.8s" repeatCount="indefinite"/>
+        </path>
+        <g transform="translate(316 407)">
+          <use href="#wheel">
+            <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="1.68s" repeatCount="indefinite"/>
+          </use>
+        </g>
+        <g transform="translate(650 407)">
+          <use href="#wheel">
+            <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="1.68s" repeatCount="indefinite"/>
+          </use>
+        </g>
+
+        <g>
+          <path d="M454 290 L498.0 348.3 L451.0 403.0" fill="none" stroke="#c47d4f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+            <animate attributeName="d" dur="2.4s" repeatCount="indefinite"
+              values="M454 290 L498.0 348.3 L451.0 403.0;
+                      M454 290 L504.5 342.7 L452.9 393.4;
+                      M454 290 L511.0 335.6 L458.3 385.3;
+                      M454 290 L516.5 327.7 L466.4 379.9;
+                      M454 290 L520.1 321.1 L476.0 378.0;
+                      M454 290 L521.5 317.9 L485.6 379.9;
+                      M454 290 L520.8 319.3 L493.7 385.3;
+                      M454 290 L518.1 324.9 L499.1 393.4;
+                      M454 290 L513.0 333.0 L501.0 403.0;
+                      M454 290 L505.4 341.8 L499.1 412.6;
+                      M454 290 L496.0 349.7 L493.7 420.7;
+                      M454 290 L487.0 355.1 L485.6 426.1;
+                      M454 290 L482.4 357.3 L476.0 428.0;
+                      M454 290 L483.1 356.9 L466.4 426.1;
+                      M454 290 L486.8 355.2 L458.3 420.7;
+                      M454 290 L491.9 352.4 L452.9 412.6;
+                      M454 290 L498.0 348.3 L451.0 403.0"/>
+          </path>
+          <g transform="translate(451.0 408.0)">
+            <animateTransform attributeName="transform" type="translate" dur="2.4s" repeatCount="indefinite"
+              values="451.0 408.0; 452.9 398.4; 458.3 390.3; 466.4 384.9; 476.0 383.0; 485.6 384.9; 493.7 390.3; 499.1 398.4; 501.0 408.0; 499.1 417.6; 493.7 425.7; 485.6 431.1; 476.0 433.0; 466.4 431.1; 458.3 425.7; 452.9 417.6; 451.0 408.0"/>
+            <path d="M-6-10 Q-1-12 5-8 L15-6 Q19-4 16-1 H-7 Q-11-2-6-10Z" fill="#c47d4f" stroke="#8b543a" stroke-width="2"/>
+            <path d="M7-5 L13-3 M2-5 L7-3" fill="none" stroke="#8b543a" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M-10 1 H16" stroke="#263c3e" stroke-width="4" stroke-linecap="round"/>
+          </g>
+        </g>
+        <path d="M311 401l157-12q19 0 19 19t-17 18l-158-13q-7 0-7-6t6-6Z"
+          fill="none" stroke="#354745" stroke-width="4"/>
+        <g fill="none" stroke="#253f41" stroke-width="14">
+          <path id="frame" d="M316 407 432 329 476 408 316 407 M432 329 600 322 476 408 M426 316 432 329 M589 295 606 336 Q622 379 650 407"/>
+        </g>
+        <use href="#frame" fill="none" stroke="#39877d" stroke-width="9"/>
+        <path d="M445 332l135-6m-92 72 100-70m21 19q14 33 34 52" fill="none" stroke="#8bc0a0" stroke-width="2.5"/>
+        <path d="M591 305l-10-25q-4-14 10-21 12-6 24 1" fill="none" stroke="#263f41" stroke-width="7"/>
+        <path d="M607 258q10 0 16 6" fill="none" stroke="#aa5c44" stroke-width="10"/>
+        <path d="M613 267q35 8 10 42-7 10-6 25" fill="none" stroke="#354c48" stroke-width="2"/>
+        <path d="M403 306q12-8 28-2l29 3q7 5-1 10l-36-1q-18 1-20-10Z"
+          fill="#9e5942" stroke="#403b3c" stroke-width="3"/>
+        <path d="M411 307q10-4 20 0l25 3" fill="none" stroke="#da9270" stroke-width="2.5"/>
+        <circle cx="316" cy="407" r="6" fill="#e8bc7a" stroke="#263f41" stroke-width="3"/>
+        <circle cx="650" cy="407" r="6" fill="#e8bc7a" stroke="#263f41" stroke-width="3"/>
+        <g transform="translate(476 408)">
+          <g>
+            <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="2.4s" repeatCount="indefinite"/>
+            <circle r="18" fill="#e8c486" stroke="#263f41" stroke-width="4"/>
+            <path d="M-25 0h50M0-12v24" stroke="#526c60" stroke-width="4"/>
+            <circle r="4" fill="#263f41"/>
+          </g>
+        </g>
+        <g>
+          <path d="M478 296 L529.3 340.7 L501.0 403.0" fill="none" stroke="#e99a5a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+            <animate attributeName="d" dur="2.4s" repeatCount="indefinite"
+              values="M478 296 L529.3 340.7 L501.0 403.0;
+                      M478 296 L521.7 348.1 L499.1 412.6;
+                      M478 296 L511.9 355.0 L493.7 420.7;
+                      M478 296 L501.4 359.8 L485.6 426.1;
+                      M478 296 L493.7 362.2 L476.0 428.0;
+                      M478 296 L491.7 362.6 L466.4 426.1;
+                      M478 296 L494.1 362.1 L458.3 420.7;
+                      M478 296 L498.7 360.8 L452.9 412.6;
+                      M478 296 L504.7 358.5 L451.0 403.0;
+                      M478 296 L511.6 355.1 L452.9 393.4;
+                      M478 296 L519.2 350.1 L458.3 385.3;
+                      M478 296 L526.6 343.6 L466.4 379.9;
+                      M478 296 L532.5 336.7 L476.0 378.0;
+                      M478 296 L535.8 331.9 L485.6 379.9;
+                      M478 296 L536.3 331.0 L493.7 385.3;
+                      M478 296 L534.1 334.4 L499.1 393.4;
+                      M478 296 L529.3 340.7 L501.0 403.0"/>
+          </path>
+          <g transform="translate(501.0 408.0)">
+            <animateTransform attributeName="transform" type="translate" dur="2.4s" repeatCount="indefinite"
+              values="501.0 408.0; 499.1 417.6; 493.7 425.7; 485.6 431.1; 476.0 433.0; 466.4 431.1; 458.3 425.7; 452.9 417.6; 451.0 408.0; 452.9 398.4; 458.3 390.3; 466.4 384.9; 476.0 383.0; 485.6 384.9; 493.7 390.3; 499.1 398.4; 501.0 408.0"/>
+            <path d="M-6-10 Q-1-12 5-8 L15-6 Q19-4 16-1 H-7 Q-11-2-6-10Z" fill="#e99a5a" stroke="#9b5a3b" stroke-width="2"/>
+            <path d="M7-5 L13-3 M2-5 L7-3" fill="none" stroke="#9b5a3b" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M-10 1 H16" stroke="#263c3e" stroke-width="4" stroke-linecap="round"/>
+          </g>
+        </g>
+
+        <g>
+          <animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="1.2s" repeatCount="indefinite"/>
+          <path d="M515 211c-31 4-48-6-68-18-13-8-28-9-41-5 19 7 21 17 33 24-20-4-41 3-56 14 26-7 40-3 49 2 26 15 60 14 89-1z"
+            fill="#c9604e" stroke="#633f3b" stroke-width="3">
+            <animate attributeName="d" dur="1.6s" repeatCount="indefinite"
+              values="M515 211c-31 4-48-6-68-18-13-8-28-9-41-5 19 7 21 17 33 24-20-4-41 3-56 14 26-7 40-3 49 2 26 15 60 14 89-1z;
+                      M515 211c-31 4-48-2-68-13-13-7-28-5-41 0 19 3 21 13 33 18-20-1-41 9-56 22 26-10 40-10 49-6 26 11 60 10 89-5z;
+                      M515 211c-31 4-48-6-68-18-13-8-28-9-41-5 19 7 21 17 33 24-20-4-41 3-56 14 26-7 40-3 49 2 26 15 60 14 89-1z"/>
+          </path>
+          <path d="M511 215c-27 4-46-2-60-9m10 22c-13-4-20-8-30-9" fill="none" stroke="#ee9973" stroke-width="2.5">
+            <animate attributeName="d"
+              values="M511 215c-27 4-46-2-60-9m10 22c-13-4-20-8-30-9;M511 215c-27 8-46 4-60-6m10 22c-13 0-20-4-30-9;M511 215c-27 4-46-2-60-9m10 22c-13-4-20-8-30-9"
+              dur="1.6s" repeatCount="indefinite"/>
+          </path>
+          <path d="M370 256q24 5 46-13c17-16 37-24 55-30 15-5 17-19 14-38-5-30 1-47 18-59 15-11 39-10 53-2 14 7 21 22 14 36-5 11-20 15-26 26-8 14 0 34-2 50-1 31-18 58-48 71-34 16-66 6-89-12-19 0-37-9-46-23-3-5 0-8 11-6Z"
+            fill="url(#plumage)" stroke="#374648" stroke-width="4"/>
+          <path d="M386 265q16 8 31 6m27 15q25 10 48-2m14-161q12-8 26-6" fill="none" stroke="#d4bea4" stroke-width="3"/>
+          <path d="M552 137c33 3 82-4 127-2 7 0 14 2 14 7-1 7-14 10-28 12-24 4-41 12-68 24-18 8-43 14-54-3-7-12-1-31 9-38Z"
+            fill="url(#pouch)" stroke="#61433e" stroke-width="3.5"/>
+          <path d="M552 137c33 3 82-4 127-2 7 0 14 2 14 7-4 4-11 5-25 5-52-2-72 6-115 4"
+            fill="#f3bd77" stroke="#61433e" stroke-width="3"/>
+          <path d="M566 167q11 10 33 2" fill="none" stroke="#f5bb7e" stroke-width="3"/>
+          <path d="M525 131q8-6 15-1" fill="none" stroke="#a48370" stroke-width="2.2"/>
+          <circle cx="534" cy="140" r="5.4" fill="#293d40"/>
+          <circle cx="535.7" cy="138.5" r="1.65" fill="#fff9e7"/>
+          <path d="M487 197c12 9 35 12 52 5l2 15c-17 8-42 5-57-6z"
+            fill="#cc674f" stroke="#633f3b" stroke-width="3"/>
+          <path d="M489 204q23 12 45 5" fill="none" stroke="#f5a27a" stroke-width="2.3"/>
+          <path d="M493 230c-25-4-42 8-71 19 10 8 23 12 37 11-7 5-15 9-20 11 23 5 53-5 68-22"
+            fill="#f8eed8" stroke="#68716a" stroke-width="2.8"/>
+          <path d="M456 252q17-2 31-12m-27 26q15-3 25-11"
+            fill="none" stroke="#b8ac96" stroke-width="2.2"/>
+          <path d="M507 227c16-3 26 5 40 14l42 22q9 2 16-2c5-3 10 2 7 7-3 4-9 6-17 6 7 1 9 5 5 7-7 3-17 0-26-4l-52-19c-13-4-23-11-27-19"
+            fill="#fff3dc" stroke="#465554" stroke-width="3"/>
+          <path d="M537 247q27 15 50 23" fill="none" stroke="#dbc9a9" stroke-width="2.1"/>
+        </g>
+      </g>
+
+      <rect width="960" height="580" fill="url(#paper)" pointer-events="none"/>
+    </svg>
+
+    <button id="motion" type="button" aria-label="暂停动画" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path class="pause" d="M8 5v14M16 5v14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <path class="play" d="M8 4.5v15l12-7.5z" fill="currentColor" stroke="currentColor" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </main>
+
+  <script>
+    const scene = document.querySelector('#ride');
+    const motionButton = document.querySelector('#motion');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function setPaused(paused) {
+      if (paused) {
+        scene.pauseAnimations();
+      } else {
+        scene.unpauseAnimations();
+      }
+
+      const label = paused ? '播放动画' : '暂停动画';
+      motionButton.classList.toggle('is-paused', paused);
+      motionButton.setAttribute('aria-label', label);
+      motionButton.title = label;
+    }
+
+    setPaused(reducedMotion.matches);
+    motionButton.hidden = false;
+
+    motionButton.addEventListener('click', () => {
+      setPaused(!scene.animationsPaused());
+    });
+    reducedMotion.addEventListener('change', (event) => setPaused(event.matches));
+  </script>
+</body>
+</html>

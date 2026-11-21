@@ -1,0 +1,101 @@
+---
+import type { MarkdownHeading } from 'astro';
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  headings: MarkdownHeading[];
+}
+
+const { title, description, headings } = Astro.props;
+
+type Difficulty = '简单' | '中等' | '困难';
+
+const difficultyDotClass: Record<Difficulty, string> = {
+  简单: 'difficulty-dot--easy',
+  中等: 'difficulty-dot--medium',
+  困难: 'difficulty-dot--hard'
+};
+const difficultyPattern = /\s*(简单|中等|困难)$/;
+const indexGroups: {
+  title: string;
+  slug: string;
+  items: { title: string; slug: string; difficulty?: Difficulty }[];
+}[] = [];
+
+for (const heading of headings) {
+  if (heading.depth === 2) {
+    indexGroups.push({ title: heading.text, slug: heading.slug, items: [] });
+  }
+
+  if (heading.depth === 3 && /^\d+、/.test(heading.text)) {
+    if (!indexGroups.length) {
+      indexGroups.push({ title: '题目索引', slug: heading.slug, items: [] });
+    }
+
+    const difficulty = heading.text.match(difficultyPattern)?.[1] as Difficulty | undefined;
+
+    indexGroups[indexGroups.length - 1].items.push({
+      title: heading.text.replace(difficultyPattern, '').trim(),
+      slug: heading.slug,
+      difficulty
+    });
+  }
+}
+
+const problemCount = indexGroups.reduce((total, group) => total + group.items.length, 0);
+const showProblemIndex = problemCount >= 12;
+---
+
+<BaseLayout {title} {description} article wide={showProblemIndex}>
+  <div class:list={['article-layout', showProblemIndex && 'article-layout--with-index']}>
+    {showProblemIndex && (
+      <aside class="problem-index" aria-label="题目索引">
+        <div class="problem-index__inner">
+          <p class="problem-index__label">题目索引</p>
+          <nav>
+            {indexGroups.map((group) => group.items.length > 0 && (
+              <section class="problem-index__group">
+                <a class="problem-index__category" href={`#${group.slug}`}>{group.title}</a>
+                <ol>
+                  {group.items.map((item) => (
+                    <li>
+                      <a href={`#${item.slug}`}>
+                        <span class="problem-index__item-title">{item.title}</span>
+                        {item.difficulty && (
+                          <span
+                            class:list={['difficulty-dot', difficultyDotClass[item.difficulty]]}
+                            aria-label={`难度：${item.difficulty}`}
+                            title={item.difficulty}
+                          />
+                        )}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ))}
+          </nav>
+        </div>
+      </aside>
+    )}
+
+    <div class="article-layout__body">
+      <article class="article">
+        <header class="article-header">
+          <slot name="metadata" />
+          <h1>{title}</h1>
+          <p>{description}</p>
+          <slot name="tags" />
+        </header>
+
+        <div class="prose">
+          <slot />
+        </div>
+      </article>
+
+      <slot name="navigation" />
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,43 @@
+---
+import type { Chapter } from '../../data/js-ts/types';
+import { withBase } from '../../lib/site';
+import '../../styles/js-ts.css';
+
+interface Props { id: string; title: string; description: string; marks: string[]; chapters: Chapter[] }
+const { id, title, description, marks, chapters } = Astro.props;
+const lessons = chapters.flatMap(chapter => chapter.lessons);
+const href = withBase('/practice/' + id + '/');
+---
+
+<section class="course-entry" data-course-entry data-course-id={id} data-ids={JSON.stringify(lessons.map(lesson => lesson.id))} aria-labelledby={id + '-entry'}>
+  <div class="course-marks" aria-hidden="true">
+    {marks.map(mark => <span class:list={['course-mark', 'course-mark--' + mark.toLowerCase()]}>{mark}</span>)}
+  </div>
+  <div class="course-entry__copy">
+    <h2 id={id + '-entry'}><a href={href}>{title}</a></h2>
+    <p>{description}</p>
+    <div class="course-entry__progress">
+      <span>{chapters.length} 章 · {lessons.length} 题</span>
+      <progress max={lessons.length} value="0" aria-label="课程完成进度"></progress>
+      <span data-course-count>0 / {lessons.length} 已完成</span>
+    </div>
+  </div>
+  <a class="button button--primary" href={href} data-course-link>开始学习</a>
+</section>
+
+<script>
+  import { openProgress } from '../../lib/js-ts/progress';
+
+  for (const entry of document.querySelectorAll<HTMLElement>('[data-course-entry]')) {
+    const ids: string[] = JSON.parse(entry.dataset.ids ?? '[]');
+    const { passed, last } = openProgress(entry.dataset.courseId!).getProgress();
+    const completed = ids.filter(id => passed[id]).length;
+    entry.querySelector('progress')!.value = completed;
+    entry.querySelector('[data-course-count]')!.textContent = completed + ' / ' + ids.length + ' 已完成';
+    if (last && ids.includes(last)) {
+      const link = entry.querySelector<HTMLAnchorElement>('[data-course-link]')!;
+      link.href += last + '/';
+      link.textContent = '继续学习';
+    }
+  }
+</script>

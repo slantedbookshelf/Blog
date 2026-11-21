@@ -1,5 +1,6 @@
 ---
 import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 import AiChat from '../components/AiChat.astro';
 import VisualEffects from '../components/VisualEffects.astro';
 import { SITE, withBase } from '../lib/site';
@@ -41,16 +42,9 @@ const pageTitle = title ? `${title} | ${SITE.title}` : SITE.title;
     <main class:list={['page-shell', wide && 'page-shell--wide']}>
       <slot />
     </main>
-    <footer class="site-footer">
-      <div class="site-footer__inner">
-        <p>&copy; {new Date().getFullYear()} {SITE.author}. Built with Astro.</p>
-        <nav aria-label="页脚链接">
-          <a href={SITE.github} target="_blank" rel="noreferrer">GitHub</a>
-          <a href={SITE.email}>Email</a>
-        </nav>
-      </div>
-    </footer>
+    <Footer />
     <AiChat />
   </body>
 </html>
+
 

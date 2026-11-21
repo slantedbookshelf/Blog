@@ -1,0 +1,37 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CourseEntry from '../../components/js-ts/CourseEntry.astro';
+import { chapters as jsChapters } from '../../data/js-ts/chapters';
+import { chapters as goChapters } from '../../data/go/chapters';
+import { withBase } from '../../lib/site';
+
+const guides = (await getCollection('practice', ({ data }) => !data.draft))
+  .sort((a, b) => a.data.pubDate.getTime() - b.data.pubDate.getTime());
+---
+
+<BaseLayout title="刷题" wide>
+  <div class="archive">
+    <header class="archive__header">
+      <p class="eyebrow">刷题 / PRACTICE</p>
+      <h1>刷题</h1>
+      <p>练习 JavaScript、TypeScript 和 Go，查阅算法与 SQL 解题思路。</p>
+    </header>
+    <CourseEntry id="js-ts" title="JavaScript / TypeScript 学习" marks={['JS', 'TS']} chapters={jsChapters}
+      description="面向有经验的开发者，从语言差异入手，边读边运行，动手完成函数题。" />
+    <CourseEntry id="go" title="Go 语言学习" marks={['Go']} chapters={goChapters}
+      description="从切片、接口与错误处理练到并发和后端数据处理，在浏览器中运行 Go。" />
+    <div class="archive__list">
+      {guides.map((guide) => (
+        <article class="archive__item">
+          <div class="archive__copy">
+            <div class="archive__meta">{guide.data.tags.join(' · ')}</div>
+            <h2><a href={withBase(`/practice/${guide.slug}/`)}>{guide.data.title}</a></h2>
+            <p>{guide.data.description}</p>
+          </div>
+          <span class="archive__arrow" aria-hidden="true">↗</span>
+        </article>
+      ))}
+    </div>
+  </div>
+</BaseLayout>

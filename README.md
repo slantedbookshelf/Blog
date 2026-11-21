@@ -73,6 +73,30 @@ npm run build
 npm run preview
 ```
 
+## JavaScript / TypeScript 学习
+
+启动博客后，从 `/practice/` 的课程卡片进入。课程主页位于 `/practice/js-ts/`，各节位于 `/practice/js-ts/<知识点 ID>/`。使用 GitHub Pages 项目路径时，链接会自动带上站点前缀。
+
+新增一节时，在 `src/data/js-ts/chapters.ts` 加入唯一的知识点 ID 和教程，在 `exercises.ts` 用同一个 ID 加入题目，最后在 `test-cases.ts` 录入至少一个公开用例。练习实现 `solve` 函数，可直接返回值或返回 Promise。判题支持正常 JSON 形状的返回值，并严格比较类型、数组顺序与对象字段。运行练习时使用第一个用例，提交时执行全部用例。
+
+Monaco 和语言 Worker 仅在进入学习工作区后加载。JS 与编译后的 TS 以 ES 模块在隔离 iframe 创建的临时 Worker 中执行。该 iframe 使用不透明源，CSP 禁止联网，有独立的 Worker 执行时限。Fetch、浏览器存储和页面 DOM 相关课程使用离线夹具。测试输入和期望输出均可从前端读取。代码、通过记录和最近学习位置保存在当前浏览器。沙箱限制浏览器能力，无法提供独立进程级内存配额。
+
+## Go 语言学习
+
+课程位于 `/practice/go/`，与 JS/TS 学习共用编辑器、阅读工作区和判题界面。两门课程分别保存进度。Go 的教程、题目及用例位于 `src/data/go/`。每个测试用例在 `args` 中保存 Go 参数表达式，在 `expected` 中保存可与返回值比较的 JSON 数据。
+
+安装与 `tools/go-runner/go.mod` 对应的 Go 工具链后，在项目根目录运行：
+
+```bash
+npm ci
+npm run go:build
+npm run dev
+```
+
+GitHub Pages 工作流会先生成 Go 沙箱产物，再构建整站。Go WebAssembly 和对应的 `wasm_exec.js` 在点运行时才加载。Yaegi 在限时 Worker 中解释单文件 `package main`。Monaco 提供 Go 高亮和关键字补全，解析和类型错误在运行时显示。运行器只暴露课程使用的标准库 API，文件访问、联网和第三方包不可用。HTTP 章节用离线数据练习服务边界。
+
+个别行为与原生 Go 有差异，例如类型化 nil、直接把可变变量作为 defer 参数，以及直接返回 channel 接收表达式。课程示例选用两种环境下结果一致的写法。
+
 ## AI Chat 功能结构
 
 AI Chat 分为三层：

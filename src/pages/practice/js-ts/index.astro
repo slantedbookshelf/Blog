@@ -1,0 +1,14 @@
+---
+import CourseHome from '../../../components/js-ts/CourseHome.astro';
+import { chapters } from '../../../data/js-ts/chapters';
+
+const directions = [
+  { short: 'JS', name: 'JavaScript', copy: '先掌握 JS 的值语义、对象模型与异步，再处理前端的事件和数据。', href: chapters[0].lessons[0].id },
+  { short: 'TS', name: 'TypeScript', copy: '已有 JS 基础？从类型系统开始，用 API 契约和用户列表完成实战。', href: chapters[3].lessons[0].id },
+];
+---
+
+<CourseHome id="js-ts" title="JavaScript / TypeScript 学习"
+  description="面向有编程基础的开发者，在浏览器中运行示例并练习 JavaScript 与 TypeScript。"
+  introduction="为已经会编程的开发者设计。从 Java、Python 等语言迁移到 JS/TS，读懂差异、运行示例，把学到的机制用在真实的前端数据流里。"
+  {chapters} {directions} />

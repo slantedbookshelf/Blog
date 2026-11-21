@@ -1,0 +1,33 @@
+---
+import type { InferGetStaticPropsType } from 'astro';
+import { getCollection, render } from 'astro:content';
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { formatDate, withBase } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const guides = await getCollection('practice', ({ data }) => !data.draft);
+
+  return guides.map((guide) => ({
+    params: { slug: guide.slug },
+    props: { guide }
+  }));
+}
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { guide } = Astro.props;
+const { Content, headings } = await render(guide);
+const { title, description, pubDate, tags } = guide.data;
+---
+
+<ArticleLayout {title} {description} {headings}>
+  <div class="post-card__meta" slot="metadata">
+    <a href={withBase('/practice/')}>← 返回刷题</a>
+    <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+  </div>
+
+  <div class="tag-row" slot="tags">
+    {tags.map((tag) => <span class="tag">#{tag}</span>)}
+  </div>
+
+  <Content />
+</ArticleLayout>

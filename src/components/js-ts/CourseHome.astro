@@ -1,0 +1,105 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../lib/site';
+import type { Chapter } from '../../data/js-ts/types';
+import '../../styles/js-ts.css';
+
+interface Props {
+  id: string;
+  title: string;
+  description: string;
+  introduction: string;
+  chapters: Chapter[];
+  directions?: { short: string; name: string; copy: string; href: string }[];
+}
+const { id, title, description, introduction, chapters, directions = [] } = Astro.props;
+const course = withBase('/practice/' + id + '/');
+const lessons = chapters.flatMap(chapter => chapter.lessons);
+---
+
+<BaseLayout {title} {description} wide>
+  <div class="course-home" data-course-home data-course-id={id}>
+    <a class="course-back" href={withBase('/practice/')}>← 返回刷题</a>
+    <header class="course-intro">
+      <div>
+        <h1>{title}</h1>
+        <p>{introduction}</p>
+      </div>
+      <div class="course-resume">
+        <div class="course-resume__label"><strong>学习进度</strong><span data-course-count>0 / {lessons.length}</span></div>
+        <progress max={lessons.length} value="0" aria-label="已通过的知识点"></progress>
+        <p data-course-last>完成练习后更新进度。</p>
+        <a class="button button--primary" data-course-resume href={course + lessons[0].id + '/'}>开始学习</a>
+      </div>
+    </header>
+    {directions.length > 0 && <section class="course-directions" aria-label="学习方向">
+      {directions.map(item => (
+        <a class="course-direction" href={course + item.href + '/'}>
+          <span class:list={['course-mark', 'course-mark--' + item.short.toLowerCase()]} aria-hidden="true">{item.short}</span>
+          <span><strong>{item.name}</strong><span class="course-direction__copy">{item.copy}</span></span>
+        </a>
+      ))}
+    </section>}
+    <section aria-labelledby="course-outline">
+      <div class="course-outline-heading">
+        <h2 id="course-outline">课程目录</h2>
+        <span>{chapters.length} 章 · {lessons.length} 个知识点 · {lessons.length} 道练习</span>
+      </div>
+      {chapters.map((chapter, index) => (
+        <details class="course-chapter" data-chapter open={index === 0}>
+          <summary>
+            <span class="course-chapter__title"><strong>{chapter.title}</strong><span>{chapter.description}</span></span>
+            <span class="course-chapter__count">{chapter.lessons.length} 节 · {chapter.lessons.length} 题</span>
+            <span class="course-state" data-chapter-state>未开始</span>
+          </summary>
+          <ul>
+            {chapter.lessons.map(lesson => (
+              <li><a href={course + lesson.id + '/'} data-course-lesson={lesson.id}>
+                <span data-course-lesson-title>{lesson.title}</span><span class="course-state" data-lesson-state>未开始</span>
+              </a></li>
+            ))}
+          </ul>
+        </details>
+      ))}
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  import { openProgress } from '../../lib/js-ts/progress';
+
+  const home = document.querySelector<HTMLElement>('[data-course-home]');
+  if (home) {
+    const { passed, visited, last } = openProgress(home.dataset.courseId!).getProgress();
+    let totalPassed = 0;
+    const chapters = home.querySelectorAll<HTMLDetailsElement>('[data-chapter]');
+    for (const chapter of chapters) {
+      const links = chapter.querySelectorAll<HTMLAnchorElement>('[data-course-lesson]');
+      let done = 0;
+      let started = false;
+      for (const link of links) {
+        const id = link.dataset.courseLesson!;
+        if (passed[id]) done++;
+        if (visited[id] || passed[id]) started = true;
+        const status = link.querySelector<HTMLElement>('[data-lesson-state]')!;
+        status.textContent = passed[id] ? '已完成' : visited[id] ? '学习中' : '未开始';
+        status.classList.toggle('is-complete', Boolean(passed[id]));
+        if (id === last) {
+          const resume = home.querySelector<HTMLAnchorElement>('[data-course-resume]')!;
+          resume.href = link.href;
+          resume.textContent = '继续学习';
+          home.querySelector('[data-course-last]')!.textContent =
+            '上次学习 · ' + link.querySelector('[data-course-lesson-title]')!.textContent;
+          chapter.open = true;
+        }
+      }
+      totalPassed += done;
+      const state = chapter.querySelector('[data-chapter-state]')!;
+      state.textContent = done === links.length ? '已完成' : started ? '学习中' : '未开始';
+      state.classList.toggle('is-complete', done === links.length);
+    }
+    const bar = home.querySelector('progress')!;
+    bar.value = totalPassed;
+    home.querySelector('[data-course-count]')!.textContent = totalPassed + ' / ' + bar.max;
+  }
+</script>

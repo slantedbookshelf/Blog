@@ -11,6 +11,12 @@ const navItems = [
   { href: '/review/', label: '八股复习' },
   { href: '/about/', label: '关于' }
 ];
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const basePath = withBase('/').replace(/\/$/, '');
+const isActive = (href: string) => {
+  const destination = withBase(href).replace(/\/$/, '') || '/';
+  return href === '/' ? path === destination : path === destination || path.startsWith(`${destination}/`) || (href === '/blog/' && path.startsWith(`${basePath}/posts/`));
+};
 ---
 
 <header class="site-header">
@@ -28,12 +34,44 @@ const navItems = [
     </label>
 
     <div class="nav-links">
-      {navItems.map((item) => (
-        <a href={withBase(item.href)}>{item.label}</a>
-      ))}
-      <a href={SITE.github} target="_blank" rel="noreferrer">GitHub</a>
+      <div class="nav-tabs" data-nav-tabs>
+        <span class="nav-tabs__cursor" aria-hidden="true"></span>
+        {navItems.map((item) => (
+          <a href={withBase(item.href)} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+        ))}
+      </div>
+      <a class="nav-github" href={SITE.github} target="_blank" rel="noreferrer">GitHub</a>
       <ThemeToggle />
     </div>
   </nav>
 </header>
+
+<script>
+  const tabs = document.querySelector<HTMLElement>('[data-nav-tabs]');
+  if (tabs) {
+    const cursor = tabs.querySelector<HTMLElement>('.nav-tabs__cursor');
+    const links = Array.from(tabs.querySelectorAll<HTMLAnchorElement>('a'));
+    const current = tabs.querySelector<HTMLAnchorElement>('a[aria-current="page"]');
+    let hovered: HTMLAnchorElement | null = null;
+    let focused: HTMLAnchorElement | null = null;
+    const position = () => {
+      if (!cursor) return;
+      const active = hovered || focused || current;
+      if (!active) { cursor.style.opacity = '0'; return; }
+      cursor.style.width = `${active.offsetWidth}px`;
+      cursor.style.transform = `translate(${active.offsetLeft}px, ${active.offsetTop}px)`;
+      cursor.style.height = `${active.offsetHeight}px`;
+      cursor.style.opacity = '1';
+    };
+    links.forEach((link) => {
+      link.addEventListener('pointerenter', (event) => { if (event.pointerType !== 'touch') { hovered = link; position(); } });
+      link.addEventListener('focus', () => { focused = link; position(); });
+      link.addEventListener('blur', () => { focused = null; position(); });
+    });
+    tabs.addEventListener('pointerleave', () => { hovered = null; position(); });
+    new ResizeObserver(position).observe(tabs);
+    position();
+    tabs.classList.add('is-ready');
+  }
+</script>
 

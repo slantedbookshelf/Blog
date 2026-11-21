@@ -1,8 +1,8 @@
-import { getCollection } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 import type { APIRoute } from 'astro';
 import { blogProfile } from '../data/profile';
 import { getPostSlug, withBase } from '../lib/site';
-import type { BlogKnowledge } from '../lib/ai/types';
+import type { BlogKnowledge, PracticeSummary } from '../lib/ai/types';
 
 function toPlainText(markdown = '') {
   return markdown
@@ -15,26 +15,36 @@ function toPlainText(markdown = '') {
     .trim();
 }
 
+function summarize(entry: CollectionEntry<'posts' | 'practice'>, slug: string, url: string): PracticeSummary {
+  return {
+    title: entry.data.title,
+    description: entry.data.description,
+    tags: entry.data.tags,
+    slug,
+    pubDate: entry.data.pubDate.toISOString(),
+    url: withBase(url),
+    excerpt: toPlainText(entry.body).slice(0, 700)
+  };
+}
+
 export const GET: APIRoute = async () => {
   const posts = (await getCollection('posts', ({ data }) => !data.draft))
     .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
     .map((post) => {
       const slug = getPostSlug(post.id);
       return {
-        title: post.data.title,
-        description: post.data.description,
-        category: post.data.category,
-        tags: post.data.tags,
-        slug,
-        pubDate: post.data.pubDate.toISOString(),
-        url: withBase(`/posts/${slug}/`),
-        excerpt: toPlainText(post.body).slice(0, 700)
+        ...summarize(post, slug, `/posts/${slug}/`),
+        category: post.data.category
       };
     });
+  const practice = (await getCollection('practice', ({ data }) => !data.draft))
+    .sort((a, b) => a.data.pubDate.getTime() - b.data.pubDate.getTime())
+    .map((guide) => summarize(guide, guide.slug, `/practice/${guide.slug}/`));
 
   const knowledge: BlogKnowledge = {
     profile: blogProfile,
     posts,
+    practice,
     generatedAt: new Date().toISOString()
   };
 

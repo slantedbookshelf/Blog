@@ -1,0 +1,41 @@
+---
+import type { Language } from '../../data/js-ts/types';
+
+interface Props { language: Language; example: string }
+const { language, example } = Astro.props;
+const suffix = language === 'go' ? 'go' : language === 'typescript' ? 'ts' : 'js';
+---
+
+<section class="lesson-workspace" id="lesson-editor" data-view-panel="editor" aria-label="代码编辑器与运行结果">
+  <div class="lesson-editor-header">
+    <span class="lesson-file" data-filename data-suffix={suffix}>{'example.' + suffix}</span>
+    <div class="lesson-actions">
+      <button class="button" type="button" data-editor-action="copy">复制</button>
+      <button class="button" type="button" data-editor-action="reset">重置</button>
+      <button class="button button--primary" type="button" data-editor-action="run" title="Ctrl 或 Cmd + Enter">运行</button>
+      <button class="button button--primary" type="button" data-editor-action="submit" hidden>提交</button>
+    </div>
+  </div>
+  <div class="lesson-editor-area" data-editor-area>
+    <textarea data-code-fallback spellcheck="false" aria-label="代码编辑器" aria-description="用 Ctrl+M 切换 Tab 缩进或移动焦点" maxlength="24000">{example}</textarea>
+    <div class="lesson-monaco" data-monaco hidden></div>
+  </div>
+  <div class="lesson-editor-footer">
+    <label>高度 <input type="range" min="200" max="680" value="330" step="10" data-editor-height /></label>
+    <span>Ctrl / ⌘ + Enter</span>
+  </div>
+  <div class="lesson-output">
+    <div class="lesson-output__heading"><strong>运行结果</strong><span data-result-status role="status">待运行</span></div>
+    <pre data-run-output tabindex="0" hidden></pre>
+    <ol data-test-output hidden></ol>
+    <p data-save-status class="lesson-save-status" role="status"></p>
+  </div>
+  <details class="lesson-runtime">
+    <summary>运行环境</summary>
+    {language === 'go' ? (
+      <p>Go 代码由隔离 Worker 中的 Yaegi / WebAssembly 解释执行，单次运行含启动限时 8 秒。请使用 package main，示例从 main 开始，练习调用 solve。支持课程用到的 fmt、strings、strconv、sort、errors、encoding/json、unicode/utf8、sync、context 和 time 中的部分 API。文件、网络和第三方包不可用，提交使用公开测试。</p>
+    ) : (
+      <p>代码在独立 Worker 中运行，单次限时 3 秒。请用 await 等待异步工作。网络、页面 DOM 和站点存储不可用，相关案例使用本地夹具。提交使用公开测试，进度保存在当前浏览器。</p>
+    )}
+  </details>
+</section>

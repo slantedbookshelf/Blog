@@ -33,31 +33,6 @@ function initHeaderState() {
   update();
 }
 
-function initActiveNav() {
-  const currentPath = normalizePath(window.location.pathname);
-  const links = [...document.querySelectorAll<HTMLAnchorElement>('.nav-links a[href]')];
-  const homePath = links[0] ? normalizePath(new URL(links[0].href).pathname) : '/';
-  const basePrefix = homePath === '/' ? '' : homePath;
-  const blogPath = links.map((link) => normalizePath(new URL(link.href).pathname)).find((path) => path.endsWith('/blog'));
-  const isPostDetail = currentPath.startsWith(`${basePrefix}/posts/`);
-
-  links.forEach((link) => {
-    const linkPath = normalizePath(new URL(link.href).pathname);
-    const isHome = linkPath === homePath;
-    const isActive = isHome
-      ? currentPath === homePath
-      : currentPath === linkPath || currentPath.startsWith(`${linkPath}/`) || (isPostDetail && linkPath === blogPath);
-    if (isActive) {
-      link.setAttribute('aria-current', 'page');
-    }
-  });
-}
-
-function normalizePath(path: string) {
-  const withoutBase = path.replace(/\/$/, '') || '/';
-  return withoutBase;
-}
-
 function initInteractiveSurfaces() {
   if (reducedMotion.matches || coarsePointer.matches) return;
 
@@ -226,7 +201,6 @@ function initProblemIndexScroll() {
 }
 
 initHeaderState();
-initActiveNav();
 initGlyphBackground();
 initInteractiveSurfaces();
 initRevealAndStagger();

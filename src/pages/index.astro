@@ -93,7 +93,7 @@ const runningDays = daysSince(SITE.startDate);
       <section class="panel works-panel" aria-label="vibe coding作品">
         <div class="panel__header">
           <h2>vibe coding作品</h2>
-          <a href={`${SITE.github}?tab=repositories`} target="_blank" rel="noreferrer">仓库</a>
+          <a href={withBase('/projects/')} aria-label="查看更多项目">更多 →</a>
         </div>
         <div class="works-list">
           {vibeWorks.map((work) => (
@@ -121,13 +121,13 @@ const runningDays = daysSince(SITE.startDate);
         </div>
       </section>
 
-      <section class="panel articles-panel" aria-label="文章列表">
+      <section class="panel articles-panel" aria-label="近期文章">
         <div class="panel__header">
-          <h2>全部文章</h2>
-          <a href={withBase('/blog/')}>归档</a>
+          <h2>近期文章</h2>
+          <a href={withBase('/blog/')} aria-label="查看更多文章">更多 →</a>
         </div>
         <div class="post-list post-list--dense">
-          {posts.map((post) => <PostCard post={post} />)}
+          {posts.slice(1, 6).map((post) => <PostCard post={post} />)}
         </div>
       </section>
     </main>

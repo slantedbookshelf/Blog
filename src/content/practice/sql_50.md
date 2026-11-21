@@ -2,9 +2,7 @@
 title: "sql_50思路"
 description: "个人总结的 LeetCode SQL 50 思路"
 pubDate: 2026-09-20
-category: "LeetCode"
 tags: ["LeetCode", "SQL", "Database"]
-pinned: true
 ---
 
 ## Select

@@ -1,0 +1,99 @@
+---
+import { SITE } from '../lib/site';
+import EnvelopeButton from './EnvelopeButton.astro';
+const cordPath = 'M50 115 C44 115 38 114 38 120 C38 135 66 134 65 115 C64 99 41 60 36 40 C30 17 57 15 62 23 C65 28 79 20 91 15 M62 23 C72 31 61 53 54 72 L37 110 C27 136 68 139 63 114 L38 43 C32 23 65 17 63 36 C62 51 45 88 37 110';
+---
+<footer class="envelope" aria-label="页脚">
+  <div class="envelope__flap">
+    <div class="envelope__meta"><span>SLANTEDBOOKSHELF</span><span>记录 · 思考 · 分享</span><span>EST. 2026</span></div>
+    <div class="envelope__heading"><p>感谢你的驻足</p><h2>下次<span>再见。</span></h2><div class="envelope__tag">KEEP EXPLORING, KEEP WRITING</div></div>
+  </div>
+  <div class="envelope__body">
+    <div class="envelope__note" id="footer-note" hidden><p>一封小小的来信</p><strong>有想法或故事想分享？<br />欢迎给我写信。</strong><a href={SITE.email}>发送邮件 ↗</a></div>
+    <div class="envelope__seal">
+      <button class="envelope__button envelope__button--top" type="button" aria-label="打开信封" aria-controls="footer-note" aria-expanded="false"><EnvelopeButton id="footer-top" /></button>
+      <button class="envelope__button envelope__button--bottom" type="button" aria-label="打开信封" aria-controls="footer-note" aria-expanded="false"><EnvelopeButton id="footer-bottom" /></button>
+      <svg class="envelope__cord" viewBox="0 0 100 300" aria-hidden="true" focusable="false">
+        <defs><filter id="footer-cord-shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation=".6" /></filter></defs>
+        <path d={cordPath} class="envelope__cord-shadow" transform="translate(.8 1.2)" filter="url(#footer-cord-shadow)" />
+        <path d={cordPath} class="envelope__cord-edge" />
+        <path d={cordPath} class="envelope__cord-core" />
+        <path d={cordPath} class="envelope__cord-fiber" />
+        <path d={cordPath} class="envelope__cord-sheen" transform="translate(-.25 -.25)" />
+        <line class="envelope__cord-tip" />
+        <path d={cordPath} class="envelope__cord-hit" />
+      </svg>
+    </div>
+    <div class="envelope__details"><div><p>保持联系</p><nav aria-label="页脚链接"><a href={SITE.github} target="_blank" rel="noreferrer">GitHub ↗</a><a href={SITE.email}>Email ↗</a></nav></div><div class="envelope__signature"><p>谢谢阅读，</p><strong>SlantedBookshelf</strong></div></div>
+    <div class="envelope__copyright">© {new Date().getFullYear()} {SITE.author} <span>Built with Astro</span></div>
+  </div>
+</footer>
+<script>
+  import { tiePath, restPath, resample, polyLength, makeRope, stepRope, smoothPath, stepWind, nearestFree } from '../scripts/footerRope';
+  const footer = document.querySelector<HTMLElement>('.envelope');
+  const note = footer?.querySelector<HTMLElement>('.envelope__note');
+  const buttons = footer?.querySelectorAll<HTMLButtonElement>('.envelope__button');
+  const svg = footer?.querySelector<SVGSVGElement>('.envelope__cord');
+  const hit = footer?.querySelector<SVGPathElement>('.envelope__cord-hit');
+  const paths = footer?.querySelectorAll<SVGPathElement>('.envelope__cord-shadow, .envelope__cord-edge, .envelope__cord-core, .envelope__cord-fiber, .envelope__cord-sheen, .envelope__cord-hit');
+  const tip = footer?.querySelector<SVGLineElement>('.envelope__cord-tip');
+  if (footer && note && buttons && svg && hit && paths && tip) {
+    const segments = 120;
+    const tiedRaw = tiePath({x: 50, y: 35}, {x: 50, y: 115}, 12, 28);
+    const tied = resample(tiedRaw, segments);
+    const rest = resample(restPath({x: 50, y: 115}, polyLength(tiedRaw), 22, {left: 2, top: 116, right: 98, bottom: 285}, 1.4, 2), segments);
+    const rope = makeRope(rest);
+    rope.seg = polyLength(tiedRaw) / segments;
+    let wind = 0, target = 0, last = 0, accumulator = 0, raf = 0;
+    let visible = false, open = false, attraction = .05;
+    let drag: {i: number; x: number; y: number; id: number} | null = null;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const draw = () => {
+      const d = smoothPath(rope.x, rope.y);
+      paths.forEach(path => path.setAttribute('d', d));
+      const n = rope.x.length - 1, dx = rope.x[n] - rope.x[n - 2], dy = rope.y[n] - rope.y[n - 2], length = Math.hypot(dx, dy) || 1;
+      tip.setAttribute('x1', String(rope.x[n] - dx / length * 4));
+      tip.setAttribute('y1', String(rope.y[n] - dy / length * 4));
+      tip.setAttribute('x2', String(rope.x[n])); tip.setAttribute('y2', String(rope.y[n]));
+    };
+    const tick = (now: number) => {
+      raf = 0;
+      const dt = Math.min(.05, last ? (now - last) / 1000 : .016); last = now;
+      wind = reduced.matches ? target : stepWind(wind, target, dt, 1.2);
+      const locked = Math.max(1, Math.floor(wind * (segments + 1)));
+      if (reduced.matches) {
+        for (let i = 0; i <= segments; i++) { const p = i < locked ? tied[i] : rest[i]; rope.x[i] = rope.px[i] = p.x; rope.y[i] = rope.py[i] = p.y; }
+      } else {
+        accumulator += dt;
+        while (accumulator >= 1 / 60) { stepRope(rope, tied, rest, locked, attraction, drag, 12); accumulator -= 1 / 60; }
+      }
+      buttons[0].style.transform = `rotate(${wind * 540}deg)`;
+      buttons[1].style.transform = `rotate(${-wind * 200}deg)`;
+      hit.classList.toggle('is-loose', locked < segments * .98);
+      if (target === 0 && wind < .015 && !open) {
+        open = true; note.hidden = false; footer.classList.add('is-open');
+        buttons.forEach(button => { button.setAttribute('aria-expanded', 'true'); button.setAttribute('aria-label', '合上信封'); });
+      }
+      draw();
+      if (visible) raf = requestAnimationFrame(tick);
+    };
+    const wake = () => { if (visible && !raf) { last = 0; raf = requestAnimationFrame(tick); } };
+    buttons.forEach(button => button.addEventListener('click', () => {
+      drag = null; attraction = .05;
+      if (target === 1) { target = 0; } else {
+        open = false; note.hidden = true; footer.classList.remove('is-open');
+        buttons.forEach(item => { item.setAttribute('aria-expanded', 'false'); item.setAttribute('aria-label', '打开信封'); });
+        target = 1;
+      }
+      wake();
+    }));
+    const local = (e: PointerEvent) => { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; const matrix = svg.getScreenCTM(); return matrix ? p.matrixTransform(matrix.inverse()) : p; };
+    hit.addEventListener('pointerdown', e => { const p = local(e); const i = nearestFree(rope, p.x, p.y, wind * (segments + 1), 12); if (i < 0) return; e.preventDefault(); hit.setPointerCapture(e.pointerId); drag = {i, x: p.x, y: p.y, id: e.pointerId}; attraction = 0; hit.classList.add('is-drag'); wake(); });
+    hit.addEventListener('pointermove', e => { if (!drag || drag.id !== e.pointerId) return; const p = local(e); drag.x = Math.max(2, Math.min(98, p.x)); drag.y = Math.max(2, Math.min(285, p.y)); });
+    const release = () => { drag = null; hit.classList.remove('is-drag'); };
+    hit.addEventListener('pointerup', release); hit.addEventListener('pointercancel', release); hit.addEventListener('lostpointercapture', release);
+    draw();
+    const observer = new IntersectionObserver(entries => { visible = entries.some(entry => entry.isIntersecting); if (visible) { if (!open && target === 0 && wind === 0) target = 1; wake(); } else { cancelAnimationFrame(raf); raf = 0; } }, {threshold: .12});
+    observer.observe(footer);
+  }
+</script>

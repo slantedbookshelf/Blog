@@ -1,0 +1,27 @@
+---
+import type { Chapter } from '../../data/js-ts/types';
+
+interface Props { current: string; chapters: Chapter[]; course: string }
+const { current, chapters, course } = Astro.props;
+---
+
+<nav class="lesson-nav" aria-label="课程章节" id="lesson-navigation" data-view-panel="navigation">
+  <h2><a href={course}>课程目录</a></h2>
+  {chapters.map(chapter => (
+    <details open={chapter.lessons.some(lesson => lesson.id === current)}>
+      <summary>
+        <span>{chapter.title}</span>
+        <span class="lesson-nav__count" data-nav-count></span>
+      </summary>
+      <ul>
+        {chapter.lessons.map(lesson => (
+          <li><a href={course + lesson.id + '/'}
+            aria-current={lesson.id === current ? 'page' : undefined} data-nav-lesson={lesson.id}>
+            <span>{lesson.title}</span>
+            <span class="course-state" data-nav-status></span>
+          </a></li>
+        ))}
+      </ul>
+    </details>
+  ))}
+</nav>

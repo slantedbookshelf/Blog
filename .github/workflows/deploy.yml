@@ -34,6 +34,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: tools/go-runner/go.mod
+          cache-dependency-path: tools/go-runner/go.sum
+
+      - name: Build Go practice runtime
+        run: npm run go:build
+
       - name: Build
         run: npm run build
 

@@ -1,0 +1,78 @@
+---
+import { Code } from 'astro:components';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CourseNavigation from './CourseNavigation.astro';
+import CodeWorkspace from './CodeWorkspace.astro';
+import ExerciseContent from './ExerciseContent.astro';
+import type { Chapter, Lesson, Exercise, TestCase } from '../../data/js-ts/types';
+import { withBase } from '../../lib/site';
+import '../../styles/js-ts.css';
+
+interface Props {
+  courseId: string;
+  courseTitle: string;
+  chapters: Chapter[];
+  chapter: Chapter;
+  lesson: Lesson;
+  exercise: Exercise;
+  cases: TestCase[];
+}
+const { courseId, courseTitle, chapters, chapter, lesson, exercise, cases } = Astro.props;
+const lessons = chapters.flatMap(chapter => chapter.lessons);
+const index = lessons.findIndex(item => item.id === lesson.id);
+const course = withBase('/practice/' + courseId + '/');
+const next = lessons[index + 1];
+const previous = lessons[index - 1];
+const { language } = chapter;
+---
+
+<BaseLayout title={lesson.title + ' · ' + courseTitle} description={lesson.concept} wide>
+  <div class="lesson-page" data-lesson-app data-id={lesson.id} data-course-id={courseId} data-language={language}
+    data-example={lesson.example} data-starter={exercise.starter} data-cases={JSON.stringify(cases)}>
+    <a class="course-back" href={course}>← {courseTitle}</a>
+    <header class="lesson-heading">
+      <p class="lesson-meta">{chapter.title} <span>·</span> {index + 1} / {lessons.length}</p>
+      <h1>{lesson.title}</h1>
+    </header>
+    <div class="lesson-views" role="group" aria-label="工作区视图">
+      <button type="button" aria-pressed="true" aria-controls="lesson-reading" data-view="reading">阅读与题目</button>
+      <button type="button" aria-pressed="false" aria-controls="lesson-editor" data-view="editor">编辑器</button>
+      <button type="button" aria-pressed="false" aria-controls="lesson-navigation" data-view="navigation">课程目录</button>
+    </div>
+    <div class="lesson-grid">
+      <CourseNavigation current={lesson.id} {chapters} {course} />
+      <article class="lesson-reading" id="lesson-reading" data-view-panel="reading">
+        <div class="lesson-mode" role="group" aria-label="学习模式">
+          <button type="button" data-mode="example" aria-controls="lesson-explanation" aria-pressed="true">教程</button>
+          <button type="button" data-mode="exercise" aria-controls="exercise" aria-pressed="false">练习</button>
+          <span class="course-state" data-lesson-status>学习中</span>
+        </div>
+        <div id="lesson-explanation" data-mode-panel="example">
+          <p class="lesson-concept">{lesson.concept}</p>
+          <aside class="lesson-note">
+            <h2>后端开发者注意</h2>
+            <p>{lesson.comparison}</p>
+          </aside>
+          <h2>常见陷阱</h2>
+          <p>{lesson.pitfall}</p>
+          <h2>运行案例</h2>
+          <Code code={lesson.example} lang={language} theme="github-dark" wrap />
+          <div class="lesson-reading__actions">
+            <button class="button" type="button" data-show-editor>打开编辑器</button>
+            <button class="button button--primary" type="button" data-open-exercise>做本节练习</button>
+          </div>
+        </div>
+        <ExerciseContent {exercise} sample={cases[0]} {language} topic={lesson.title} />
+        <div class="lesson-pagination">
+          {previous && <a href={course + previous.id + '/'}>← 上一节</a>}
+          <a href={next ? course + next.id + '/' : course}>{next ? '下一节 →' : '返回课程目录'}</a>
+        </div>
+      </article>
+      <CodeWorkspace {language} example={lesson.example} />
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import '../../lib/js-ts/lesson-page';
+</script>

@@ -1,16 +1,21 @@
 ---
 ---
 
-<button class="theme-toggle" type="button" aria-label="切换颜色主题" data-theme-toggle>
-  <span class="theme-toggle__icon" aria-hidden="true"></span>
+<button class="theme-toggle" type="button" aria-label="深色模式" aria-pressed="true" data-theme-toggle>
+  <span class="theme-toggle__thumb" aria-hidden="true"></span>
+  <svg class="theme-toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z" /></svg>
+  <svg class="theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" /></svg>
 </button>
 
 <script>
-  const button = document.querySelector('[data-theme-toggle]');
+  const button = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  const updateState = () => button?.setAttribute('aria-pressed', String(document.documentElement.dataset.theme === 'dark'));
+  updateState();
 
   button?.addEventListener('click', () => {
     const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
     document.documentElement.dataset.theme = nextTheme;
     localStorage.setItem('theme', nextTheme);
+    updateState();
   });
 </script>

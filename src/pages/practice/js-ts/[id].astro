@@ -1,0 +1,19 @@
+---
+import type { InferGetStaticPropsType } from 'astro';
+import CourseLesson from '../../../components/js-ts/CourseLesson.astro';
+import { chapters } from '../../../data/js-ts/chapters';
+import { exercises } from '../../../data/js-ts/exercises';
+import { tests } from '../../../data/js-ts/test-cases';
+
+export function getStaticPaths() {
+  return chapters.flatMap(chapter => chapter.lessons.map(lesson => ({
+    params: { id: lesson.id }, props: { lesson, chapter },
+  })));
+}
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { chapter, lesson } = Astro.props;
+---
+
+<CourseLesson courseId="js-ts" courseTitle="JavaScript / TypeScript 学习" {chapters} {chapter} {lesson}
+  exercise={exercises[lesson.id]} cases={tests[lesson.id]} />

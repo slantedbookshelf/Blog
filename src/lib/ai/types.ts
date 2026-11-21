@@ -51,9 +51,12 @@ export interface BlogPostSummary {
   excerpt?: string;
 }
 
+export type PracticeSummary = Omit<BlogPostSummary, 'category'>;
+
 export interface BlogKnowledge {
   profile: BlogProfile;
   posts: BlogPostSummary[];
+  practice?: PracticeSummary[];
   generatedAt: string;
 }
 
